@@ -4,18 +4,18 @@
 2. Upload module file to your WHMCS provisioning module folder.
     - ie whmcs_root_folder/modules/servers/
 3. Add server: Navigate to __Setup__ > __Products/Services__ > __Server__ and click __Add New Server__.
-![Add a server](01-AddServer.png)
+![Add a server](documentation/01-AddServer.png)
 4. Add server: Input your server's configuration details and save.
-![Input server configuration](02-ConfigureServer.png)
+![Input server configuration](documentation/02-ConfigureServer.png)
 5. Add server: Click __Create New Group__ and assign your server to the new server group.
-![Assign server to group](03-ServerGroup.png)
+![Assign server to group](documentation/03-ServerGroup.png)
 6. Navigate to __Setup__ > __Products/Services__ > __Products/Services__ and edit or create a new product. In the __Module Settings__ tab, select __Comet Backup__ and choose the new server group.
     * We recommend disabling the __Require Domain__ option in the __Details__ tab.
     * If you wish for new orders to be automatically accepted and new accounts to be immediately created on the Comet server, you should select __Automatically setup the product as soon as an order is placed__ in the __Module Settings__ tab 
-    ![Automatic Setup](05-AutomaticSetup.png)
+    ![Automatic Setup](documentation/05-AutomaticSetup.png)
 7. Select a policy group and save your changes.
 8. Next click on __Create Config Option__. Configurable options will be created automatically and assigned to the product. These should be edited to reflect desired pricing.
-![Create Config Option](04-ProductConfig.png)
+![Create Config Option](documentation/04-ProductConfig.png)
 ***
 ## Manual Setup for Configurable Options
 1. Navigate to __Setup__ > __Products/Services__ > __Configurable Options__ and click __Create a New Group__.
