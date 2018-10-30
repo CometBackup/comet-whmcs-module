@@ -5,6 +5,7 @@ require_once __DIR__.'/functions.php';
 if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
+
 function cometbackup_MetaData(){
     return array(
         'DisplayName' => 'Comet Backup',
@@ -12,6 +13,7 @@ function cometbackup_MetaData(){
         'RequiresServer' => true, // Set true if module requires a server to work
     );
 }
+
 function cometbackup_ConfigOptions($params) {
     return [
         'PolicyGroupGUID'       => [
