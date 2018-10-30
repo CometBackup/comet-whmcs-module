@@ -14,16 +14,23 @@ function cometbackup_MetaData(){
 }
 function cometbackup_ConfigOptions($params) {
     return [
-        'PolicyGroupGUID'           => [
+        'PolicyGroupGUID'       => [
             'FriendlyName'          => 'Policy Group',
             'Type'                  => 'dropdown',
             'Description'           => '<br>Select a policy group to apply to users of this product',
             'Loader'                => 'cometbackup_ConfigOptionsPolicyGroupLoader',
             'SimpleMode'            => true
         ],
-        'Message' => [
+        'StorageProviderID'     => [
+            'FriendlyName'          => 'Storage Vault',
+            'Type'                  => 'dropdown',
+            'Description'           => '<br>Request an initial storage vault for new users',
+            'Loader'                => 'cometbackup_ConfigOptionsStorageProvidersLoader',
+            'SimpleMode'            => true
+        ],
+        'Message'               => [
             'FriendlyName'          => 'Note',
-            'Description'           => 'A policy group can be assigned here when at least one policy group has been created on the server. <br> If the selected policy group is removed from the server, new users of this product will not be assigned a policy group at creation.',
+            'Description'           => 'The [Create New Policy Group] option will cause a new policy group to be created - for technical reasons, this one-time action is postponed to the first time a new account is created using this product.',
             'SimpleMode'            => true
         ],
     ];
@@ -54,6 +61,19 @@ function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
 
     return ['' => 'None'] + $policyGroups + [$newPolicyGroupID => '[Create New Policy Group] ('.$newPolicyGroupID.')'];
 }
+
+function cometbackup_ConfigOptionsStorageProvidersLoader(array $params) {
+    $baseRequestPOSTData = [
+        'Username' => $params['serverusername'],
+        'AuthType' => 'Password',
+        'Password' => $params['serverpassword'],
+    ];
+    $storageProviders = performAPIRequest($params['serverhostname'], $baseRequestPOSTData, 'request-storage-vault-providers');
+
+    if (array_key_exists('curlerror', $storageProviders))
+        throw new Exception('Invalid request. Server mis-configured?');
+
+    return ["" => "None"] + $storageProviders;
 }
 
 function cometbackup_CreateAccount(array $params) {
@@ -114,6 +134,13 @@ function cometbackup_CreateAccount(array $params) {
     $response = performAPIRequest($params['serverhostname'], $addUserRequestQuery,'add-user');
 
     if (isset($response['Status']) && $response['Status'] == 200) {
+        // Request storage vault
+        if (!empty($params['configoption2'])) {
+            $requestStorageVaultRequestData = $baseRequestData + [
+                'StorageProvider' => $params['configoption2']
+            ];
+            performAPIRequest($params['serverhostname'], $requestStorageVaultRequestData,'request-storage-vault');
+        }
         // Retrieve new profile content for modification
         $profile = performAPIRequest($params['serverhostname'], $baseRequestData,'get-user-profile-and-hash', false);
 
