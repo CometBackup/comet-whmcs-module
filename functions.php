@@ -225,4 +225,46 @@
             return "Error Fetching User.";
         }
     }
+
+
+    function maybeCreatePolicyGroup($params, $policyGroupGUID) {
+        $baseRequestData = [
+            'Username' => $params['serverusername'],
+            'AuthType' => 'Password',
+            'Password' => $params['serverpassword'],
+            'PolicyID' => $policyGroupGUID
+        ];
+
+        $policy = performAPIRequest(
+            $params['serverhostname'],
+            $baseRequestData,
+            'policies/get'
+        );
+
+        if (empty($policy['PolicyHash'])) {
+            performAPIRequest(
+                $params['serverhostname'],
+                $baseRequestData + [
+                    'Policy' => json_encode([
+                        'Description' => $policyGroupGUID,
+                        'Policy' => [
+                            'PreventChangeAccountPassword' => true,
+                            'PreventDeleteStorageVault' => true,
+                            'PreventAddCustomStorageVault' => true,
+                            'PreventRequestStorageVault' => true,
+                            'StorageVaultProviders' => [
+                                'AllowedProvidersWhenRestricted' => [1003],
+                                'ShouldRestrictProviderList' => true
+                            ],
+                            'ProtectedItemEngineTypes' => [
+                                'AllowedEngineTypeWhenRestricted' => [],
+                                'ShouldRestrictEngineTypeList' => false
+                            ],
+                        ]
+                    ])
+                ],
+                'policies/set'
+            );
+        }
+    }
 ?>
