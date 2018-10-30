@@ -346,18 +346,29 @@ function cometbackup_ClientArea(array $params) {
                 $totalSize += $source['Statistics']['LastBackupJob']['TotalSize'];
             }
 
+            $templateVars = [
+                'Username' => $userProfile['Profile']['Username'],
+                'AllProtectedItemsQuota' => ($userProfile['Profile']['AllProtectedItemsQuotaBytes'] / pow(1024, 3)), // Bytes / GiB
+                'MaximumDevices' => $userProfile['Profile']['MaximumDevices'],
+                'CreateTime' => date("Y-m-d h:i:sa", $userProfile['Profile']['CreateTime']),
+                'getJobsForUser' => $getJobsForUser,
+                'userProfile' => $userProfile,
+                'totalSize' => formatBytes($totalSize),
+            ];
+
+            if (!empty($userProfile['Profile']['Destinations'])) {
+                $destination = array_values($userProfile['Profile']['Destinations'])[0];
+                if ($destination['StorageLimitEnabled'] === true) {
+                    $templateVars['StorageVaultQuota'] = $destination['StorageLimitBytes'] / pow(1024, 3); // Bytes / GiB
+                }
+            } else {
+                $templateVars['StorageVaultQuota'] = false;
+            }
+
             // Return template data
             return array(
                 'templatefile' => 'clientarea',
-                'vars' => [
-                    'Username' => $userProfile['Profile']['Username'],
-                    'AllProtectedItemsQuotaBytes' => ($userProfile['Profile']['AllProtectedItemsQuotaBytes'] / pow(1024, 3)), // Bytes / GiB
-                    'MaximumDevices' => $userProfile['Profile']['MaximumDevices'],
-                    'CreateTime' => date("Y-m-d h:i:sa", $userProfile['Profile']['CreateTime']),
-                    'getJobsForUser' => $getJobsForUser,
-                    'userProfile' => $userProfile,
-                    'totalSize' => formatBytes($totalSize),
-                ]
+                'vars' => $templateVars
             );
 
         } else if (array_key_exists('Status', $userProfile) && $userProfile['Status'] === 500 && array_key_exists('Message', $userProfile)) {
