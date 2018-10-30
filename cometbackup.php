@@ -138,7 +138,14 @@ function cometbackup_CreateAccount(array $params) {
 
     $response = performAPIRequest($params['serverhostname'], $addUserRequestQuery,'add-user');
 
+    // Account creation succeeded
     if (isset($response['Status']) && $response['Status'] == 200) {
+
+        // Update username on record in case this changed
+        Capsule::table('tblhosting')->where('id', $params['serviceid'])->update([
+            'username' => $username
+        ]);
+
         // Request storage vault
         if (!empty($params['configoption2'])) {
             $requestStorageVaultRequestData = $baseRequestData + [
@@ -146,26 +153,31 @@ function cometbackup_CreateAccount(array $params) {
             ];
             performAPIRequest($params['serverhostname'], $requestStorageVaultRequestData,'request-storage-vault');
         }
+
         // Retrieve new profile content for modification
         $profile = performAPIRequest($params['serverhostname'], $baseRequestData,'get-user-profile-and-hash', false);
 
         // Sanity check
         if (is_object($profile) && property_exists($profile, 'ProfileHash')) {
             $profileData = $profile->Profile;
-            $profileData->AllProtectedItemsQuotaEnabled     = !empty($params['configoptions']['space_in_gb']);
-            $profileData->AllProtectedItemsQuotaBytes       = (empty($params['configoptions']['space_in_gb']) ? 0 : $params['configoptions']['space_in_gb'] * pow(1024,3));
-            $profileData->MaximumDevices                    = intval((empty($params['configoptions']['number_of_devices']) ? 0 : $params['configoptions']['number_of_devices']));
+            // Apply protected items quota if set
+            $profileData->AllProtectedItemsQuotaEnabled     = !empty($params['configoptions']['protected_item_quota_gb']);
+            $profileData->AllProtectedItemsQuotaBytes       = (empty($params['configoptions']['protected_item_quota_gb']) ? 0 : intval($params['configoptions']['protected_item_quota_gb']) * pow(1024,3));
+
+            // Apply device quota if set
+            $profileData->MaximumDevices                    = intval((empty($params['configoptions']['number_of_devices']) ? 0 : intval($params['configoptions']['number_of_devices'])));
+
+            // Apply policy group if set
             $profileData->PolicyID                          = (empty($params['configoption1']) ? '' : $params['configoption1']);
 
+            // Prepare request
             $updateProfileRequestData = $baseRequestData + [
                 'ProfileData'           => json_encode($profileData),
                 'RequireHash'           => $profile->ProfileHash
             ];
 
+            // Update user
             $response = performAPIRequest($params['serverhostname'], $updateProfileRequestData,'set-user-profile-hash');
-            Capsule::table('tblhosting')->where('id', $params['serviceid'])->update([
-                'username' => $username
-            ]);
 
             if (isset($response['Status']) && $response['Status'] == 200) {
                 return 'success';
@@ -175,6 +187,7 @@ function cometbackup_CreateAccount(array $params) {
         }
 
     } else {
+        // Account creation failed
         return handleErrorResponse($response);
     }
 }
