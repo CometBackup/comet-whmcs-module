@@ -160,6 +160,18 @@ function cometbackup_CreateAccount(array $params) {
         // Sanity check
         if (is_object($profile) && property_exists($profile, 'ProfileHash')) {
             $profileData = $profile->Profile;
+
+            // Apply storage vault quota if set
+            if (
+                !empty($params['configoptions']['storage_vault_quota_gb']) &&
+                !empty($profileData->Destinations)
+            ) {
+                foreach (array_keys((array)$profileData->Destinations) as $destinationGUID) {
+                    $profileData->Destinations->$destinationGUID->StorageLimitEnabled = true;
+                    $profileData->Destinations->$destinationGUID->StorageLimitBytes = intval($params['configoptions']['storage_vault_quota_gb']) * pow(1024, 3);
+                }
+            }
+
             // Apply protected items quota if set
             $profileData->AllProtectedItemsQuotaEnabled     = !empty($params['configoptions']['protected_item_quota_gb']);
             $profileData->AllProtectedItemsQuotaBytes       = (empty($params['configoptions']['protected_item_quota_gb']) ? 0 : intval($params['configoptions']['protected_item_quota_gb']) * pow(1024,3));

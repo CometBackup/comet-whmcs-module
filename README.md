@@ -23,7 +23,8 @@
 3. Click __Add New Configurable Option__.
 4. Enter an __Option Name__. You must choose from the following list, with the left-side preceding "|" being an exact match, and the right side being the label your client will see:
     * `number_of_devices|Devices`
-    * `space_in_gb|Protected Items Quota`
+    * `protected_item_quota_gb|Protected Items Quota`
+    * `storage_vault_quota_gb|Initial Storage Vault Quota`
 5. Set __Option Type__ to __Quantity__.
 6. In __Add Option__, enter `GB`.
 7. Click __Save Changes__.
