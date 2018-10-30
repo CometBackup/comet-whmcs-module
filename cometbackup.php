@@ -125,6 +125,11 @@ function cometbackup_CreateAccount(array $params) {
     }
     $username = $newUsername;
 
+    // Create policy if it doesn't yet exist
+    if (!empty($params['configoption1'])) {
+        maybeCreatePolicyGroup($params, $params['configoption1']);
+    }
+
     // Prepare add-user API request params
     $addUserRequestQuery = $baseRequestData + [
         'TargetPassword' => $params['password'],
