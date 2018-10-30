@@ -249,6 +249,7 @@
                         'Description' => $policyGroupGUID,
                         'Policy' => [
                             'PreventChangeAccountPassword' => true,
+                            'ModeAdminResetPassword' => 3,
                             'PreventDeleteStorageVault' => true,
                             'PreventAddCustomStorageVault' => true,
                             'PreventRequestStorageVault' => true,
