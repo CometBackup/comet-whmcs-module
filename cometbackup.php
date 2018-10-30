@@ -36,11 +36,24 @@ function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
         'Password' => $params['serverpassword'],
     ];
     $policyGroups = performAPIRequest($params['serverhostname'], $baseRequestPOSTData, 'policies/list');
+
+    $maxPolicyNum = 0;
+    foreach ($policyGroups as $policyID => $policyName) {
+        if (strpos($policyID, 'WHMCS_') === 0) {
+            $policyNum = intval(substr($policyID, 6));
+            if ($policyNum > $maxPolicyNum) {
+                $maxPolicyNum = $policyNum;
+            }
+        }
+    }
     
     if (array_key_exists('curlerror', $policyGroups))
         throw new Exception('Invalid request. Server mis-configured?');
 
-    return ["" => "None"] + $policyGroups;
+    $newPolicyGroupID = 'WHMCS_'.($maxPolicyNum+1);
+
+    return ['' => 'None'] + $policyGroups + [$newPolicyGroupID => '[Create New Policy Group] ('.$newPolicyGroupID.')'];
+}
 }
 
 function cometbackup_CreateAccount(array $params) {
