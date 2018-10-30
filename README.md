@@ -1,4 +1,4 @@
-# Comet WHMCS Module Documentation - **2018/10/05**
+# Comet WHMCS Module Documentation - **2018/10/31**
 ## Installation and Configuration
 1. Extract the module .zip file
 2. Upload the module folder to your WHMCS provisioning module folder, and rename it to __cometbackup__.
