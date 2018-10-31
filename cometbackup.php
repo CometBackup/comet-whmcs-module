@@ -261,7 +261,14 @@ function cometbackup_ClientArea(array $params) {
                 'get-jobs-for-custom-search'
             );
 
-            foreach ($getJobsForUser as &$job) {
+            // Expand and format job details for human-readability
+            foreach ($getJobsForUser as $key => &$job) {
+                // Ignore jobs for removed items
+                if (!array_key_exists($job['SourceGUID'], $userProfile['Profile']['Sources'])) {
+                    unset($getJobsForUser[$key]);
+                    continue;
+                }
+
                 if (
                     !array_key_exists('Devices', $userProfile['Profile']) ||
                     !array_key_exists($job['DeviceID'], $userProfile['Profile']['Devices'])
@@ -270,7 +277,17 @@ function cometbackup_ClientArea(array $params) {
                 } else {
                     $job['DeviceName'] = $userProfile['Profile']['Devices'][$job['DeviceID']]['FriendlyName'];
                 }
+
+                $job['SourceDescription'] = $userProfile['Profile']['Sources'][$job['SourceGUID']]['Description'];
+                $job['Status'] = formatStatusType($job['Status']);
+                $job['Classification'] = formatJobType($job['Classification']);
+                $job['TotalSize'] = formatBytes($job['TotalSize']);
+                $job['UploadSize'] = formatBytes($job['UploadSize']);
+                $job['DownloadSize'] = formatBytes($job['DownloadSize']);
+                $job['StartTime'] = date("Y-m-d h:i", $job['StartTime']);
             }
+
+
 
             // Calculate data usage across all protected items
             $totalSize = 0;

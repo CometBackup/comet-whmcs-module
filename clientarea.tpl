@@ -29,20 +29,20 @@
 
             <tr>
                 <td>Protected Items Quota</td>
-        {if $AllProtectedItemsQuota eq 0}
+            {if $AllProtectedItemsQuota eq 0}
                 <td>Unlimited</td>
-        {else}
+            {else}
                 <td>{$AllProtectedItemsQuota}GB</td>
-        {/if}
+            {/if}
             </tr>
 
             <tr>
                 <td>Initial Storage Vault Quota</td>
-        {if $StorageVaultQuota eq false}
+            {if $StorageVaultQuota eq false}
                 <td>Unlimited</td>
-        {else}
+            {else}
                 <td>{$StorageVaultQuota}GB</td>
-        {/if}
+            {/if}
             </tr>
 
             <tr>
@@ -74,26 +74,19 @@
                 <th>Downloaded</th>
                 <th>Started</th>
             </tr>
-            {php}
-                $userProfile = $template->get_template_vars('userProfile');
-                $userJobs = $template->get_template_vars('getJobsForUser');
-
-                foreach ($userJobs as $job) {
-                    if (array_key_exists($job['SourceGUID'], $userProfile['Profile']['Sources'])) {
-                        echo '<tr>';
-                        echo '<td>'.hesc($job['DeviceName']).'</td>';
-                        echo '<td>'.hesc($userProfile['Profile']['Sources'][$job['SourceGUID']]['Description']).'</td>';
-                        echo '<td>'.hesc(formatJobType($job['Classification'])).'</td>';
-                        echo '<td>'.hesc(formatStatusType($job['Status'])).'</td>';
-                        echo '<td>'.hesc($job['TotalFiles']).'</td>';
-                        echo '<td>'.hesc(formatBytes($job['TotalSize'])).'</td>';
-                        echo '<td>'.hesc(formatBytes($job['UploadSize'])).'</td>';
-                        echo '<td>'.hesc(formatBytes($job['DownloadSize'])).'</td>';
-                        echo '<td>'.hesc(date("Y-m-d h:i", $job['StartTime'])).'</td>';
-                        echo '</tr>';
-                    }
-                }
-            {/php}
+        {foreach from=$getJobsForUser item=job}
+            <tr>
+                <td>{$job['DeviceName']}</td>
+                <td>{$job['SourceDescription']}</td>
+                <td>{$job['Classification']}</td>
+                <td>{$job['Status']}</td>
+                <td>{$job['TotalFiles']}</td>
+                <td>{$job['TotalSize']}</td>
+                <td>{$job['UploadSize']}</td>
+                <td>{$job['DownloadSize']}</td>
+                <td>{$job['StartTime']}</td>
+            </tr>
+        {/foreach}
         </table>
     </div>
     <div id="downloads" class="tab-pane fade">
