@@ -11,7 +11,7 @@ Earlier versions of these products may work with some caveats, but are untested.
 3. Navigate to __Setup__ > __Products/Services__ > __Servers__ and click __Add New Server__.
 4. Choose a name, input your Comet server's connection details (including protocol and port) in the __hostname__ field.  
     ![Add a Server - Host Details](documentation/01-ServerAddHost.png)
-5. Select __Comet Backup__ as the server's __Type__, enter your login details, and save.  
+5. Select __Comet Backup__ as the server's __Type__, enter your login details, choose your connection protocol (http/https) and save.  
     ![Add a Server - Auth Details](documentation/02-ServerAddAuth.png)
     * You can use the __Test Connection__ button to verify your server is accessible at the provided address using the provided login details.
 6. Still in the __Servers__ area, click __Create New Group__ and assign your server to your new server group.  
