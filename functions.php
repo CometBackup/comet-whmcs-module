@@ -34,7 +34,13 @@
      * @return array|object|string
      */
     function performAPIRequest($params, $data, $endPoint, $assoc=true){
-        $query = http_build_query($data);
+        $baseParams = [
+            'Username' => $params['serverusername'],
+            'AuthType' => 'Password',
+            'Password' => $params['serverpassword'],
+        ];
+
+        $query = http_build_query($baseParams + $data);
         $ch = getCurlHandle(
             getHost($params).'/api/v1/admin/'.$endPoint,
             $query,
@@ -61,7 +67,13 @@
      * @return string
      */
     function softwareDownload($params, $data, $action) {
-        $query = http_build_query($data);
+        $baseParams = [
+            'Username' => $params['serverusername'],
+            'AuthType' => 'Password',
+            'Password' => $params['serverpassword'],
+        ];
+
+        $query = http_build_query($baseParams + $data);
         $ch = getCurlHandle(
             getHost($params).'/api/v1/admin/'.$action,
             $query,
@@ -190,9 +202,6 @@
      */
     function modifyAccountSuspensionState($params, $suspended) {
         $baseRequestData = [
-            'Username' => $params['serverusername'],
-            'AuthType' => 'Password',
-            'Password' => $params['serverpassword'],
             'TargetUser' => $params['username']
         ];
 
@@ -233,9 +242,6 @@
      */
     function maybeCreatePolicyGroup($params, $policyGroupGUID) {
         $baseRequestData = [
-            'Username' => $params['serverusername'],
-            'AuthType' => 'Password',
-            'Password' => $params['serverpassword'],
             'PolicyID' => $policyGroupGUID
         ];
 
@@ -281,9 +287,6 @@
     function applyRestrictions($params) {
         // Prepare base API request params
         $baseRequestData = [
-            'Username' => $params['serverusername'],
-            'AuthType' => 'Password',
-            'Password' => $params['serverpassword'],
             'TargetUser' => $params['username'],
         ];
 

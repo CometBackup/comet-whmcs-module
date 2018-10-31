@@ -39,12 +39,7 @@ function cometbackup_ConfigOptions($params) {
 }
 
 function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
-    $baseRequestPOSTData = [
-        'Username' => $params['serverusername'],
-        'AuthType' => 'Password',
-        'Password' => $params['serverpassword'],
-    ];
-    $policyGroups = performAPIRequest($params, $baseRequestPOSTData, 'policies/list');
+    $policyGroups = performAPIRequest($params, [], 'policies/list');
 
     $maxPolicyNum = 0;
     foreach ($policyGroups as $policyID => $policyName) {
@@ -65,12 +60,7 @@ function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
 }
 
 function cometbackup_ConfigOptionsStorageProvidersLoader(array $params) {
-    $baseRequestPOSTData = [
-        'Username' => $params['serverusername'],
-        'AuthType' => 'Password',
-        'Password' => $params['serverpassword'],
-    ];
-    $storageProviders = performAPIRequest($params, $baseRequestPOSTData, 'request-storage-vault-providers');
+    $storageProviders = performAPIRequest($params, [], 'request-storage-vault-providers');
 
     if (array_key_exists('curlerror', $storageProviders))
         throw new Exception('Invalid request. Server mis-configured?');
@@ -106,9 +96,6 @@ function cometbackup_CreateAccount(array $params) {
 
     // Prepare base API request params
     $baseRequestData = [
-        'Username' => $params['serverusername'],
-        'AuthType' => 'Password',
-        'Password' => $params['serverpassword'],
         'TargetUser' => $username,
     ];
 
@@ -175,9 +162,6 @@ function cometbackup_UnsuspendAccount(array $params){
 
 function cometbackup_TerminateAccount(array $params){
     $requestData = [
-        'Username' => $params['serverusername'],
-        'AuthType' => 'Password',
-        'Password' => $params['serverpassword'],
         'TargetUser' => $params['username']
     ];
     $response = performAPIRequest($params, $requestData,'delete-user');
@@ -193,9 +177,6 @@ function cometbackup_TerminateAccount(array $params){
 
 function cometbackup_ChangePassword(array $params){
     $requestData = [
-        'Username'          => $params['serverusername'],
-        'AuthType'          => 'Password',
-        'Password'          => $params['serverpassword'],
         'TargetUser'        => $params['username'],
         'NewPassword'       => $params['password']
     ];
@@ -210,12 +191,6 @@ function cometbackup_ChangePassword(array $params){
 }
 
 function cometbackup_ClientArea(array $params) {
-    $baseRequestPOSTData = [
-        'Username' => $params['serverusername'],
-        'AuthType' => 'Password',
-        'Password' => $params['serverpassword'],
-    ];
-
     // Handle client download request
     if (!!$_REQUEST['type'] && strpos($_REQUEST['type'], 'downloadResponse') !== false) {
         switch ($_REQUEST['type']) {
@@ -245,7 +220,7 @@ function cometbackup_ClientArea(array $params) {
         header("Content-Disposition:attachment;filename='".$fileName."'");
         echo softwareDownload(
             $params,
-            $baseRequestPOSTData + ['SelfAddress' => getHost($params)],
+             ['SelfAddress' => getHost($params)],
             'branding/generate-client/'.$generateClientApiPath
         );
         exit(); // Exit here to prevent any other data being added to the stream
@@ -255,14 +230,14 @@ function cometbackup_ClientArea(array $params) {
     } else {
         $userProfile = performAPIRequest(
             $params,
-            $baseRequestPOSTData + ['TargetUser' => $params['username']],
+            ['TargetUser' => $params['username']],
             'get-user-profile-and-hash'
         );
 
         if (array_key_exists('ProfileHash', $userProfile)) {
             $getJobsForUser = performAPIRequest(
                 $params,
-                $baseRequestPOSTData + [
+                [
                     'Query' => '
                         {
                             "ClauseType": "and",
@@ -350,13 +325,8 @@ function cometbackup_ClientArea(array $params) {
     }
 }
 
-function cometbackup_TestConnection(array $settings){
-    $requestParams=[];
-    $requestParams['Username']=$settings['serverusername'];  // Comet api login username
-    $requestParams['Password']=$settings['serverpassword'];  // Comet api login password
-    $requestParams['AuthType']='Password';
-
-    $resp = performAPIRequest($settings['serverhostname'], $requestParams,'meta/version');
+function cometbackup_TestConnection(array $params){
+    $resp = performAPIRequest($params, [],'meta/version');
 
     // Expected Success Response
     if (array_key_exists('Version', $resp)) {
