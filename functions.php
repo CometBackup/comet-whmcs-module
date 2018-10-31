@@ -226,7 +226,11 @@
         }
     }
 
-
+    /**
+     * Checks for the existence of a policy group on the Comet server and creates it if necessary.
+     * @param array $params
+     * @param string $policyGroupGUID
+     */
     function maybeCreatePolicyGroup($params, $policyGroupGUID) {
         $baseRequestData = [
             'Username' => $params['serverusername'],
@@ -269,6 +273,11 @@
         }
     }
 
+    /**
+     * Retrieves a user profile and updates it to reflect the currently configured account restrictions in WHMCS.
+     * @param array $params
+     * @return string
+     */
     function applyRestrictions($params) {
         // Prepare base API request params
         $baseRequestData = [
