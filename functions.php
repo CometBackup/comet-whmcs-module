@@ -268,4 +268,58 @@
             );
         }
     }
+
+    function applyRestrictions($params) {
+        // Prepare base API request params
+        $baseRequestData = [
+            'Username' => $params['serverusername'],
+            'AuthType' => 'Password',
+            'Password' => $params['serverpassword'],
+            'TargetUser' => $params['username'],
+        ];
+
+        // Retrieve profile content for modification
+        $profile = performAPIRequest($params['serverhostname'], $baseRequestData,'get-user-profile-and-hash', false);
+
+        // Sanity check
+        if (is_object($profile) && property_exists($profile, 'ProfileHash')) {
+            $profileData = $profile->Profile;
+
+            // Apply storage vault quota if set
+            if (
+                !empty($params['configoptions']['storage_vault_quota_gb']) &&
+                !empty($profileData->Destinations)
+            ) {
+                foreach (array_keys((array)$profileData->Destinations) as $destinationGUID) {
+                    $profileData->Destinations->$destinationGUID->StorageLimitEnabled = true;
+                    $profileData->Destinations->$destinationGUID->StorageLimitBytes = intval($params['configoptions']['storage_vault_quota_gb']) * pow(1024, 3);
+                }
+            }
+
+            // Apply protected items quota if set
+            $profileData->AllProtectedItemsQuotaEnabled     = !empty($params['configoptions']['protected_item_quota_gb']);
+            $profileData->AllProtectedItemsQuotaBytes       = (empty($params['configoptions']['protected_item_quota_gb']) ? 0 : intval($params['configoptions']['protected_item_quota_gb']) * pow(1024,3));
+
+            // Apply device quota if set
+            $profileData->MaximumDevices                    = intval((empty($params['configoptions']['number_of_devices']) ? 0 : intval($params['configoptions']['number_of_devices'])));
+
+            // Apply policy group if set
+            $profileData->PolicyID                          = (empty($params['configoption1']) ? '' : $params['configoption1']);
+
+            // Prepare request
+            $updateProfileRequestData = $baseRequestData + [
+                    'ProfileData'           => json_encode($profileData),
+                    'RequireHash'           => $profile->ProfileHash
+                ];
+
+            // Update user
+            $response = performAPIRequest($params['serverhostname'], $updateProfileRequestData,'set-user-profile-hash');
+
+            if (isset($response['Status']) && $response['Status'] == 200) {
+                return 'success';
+            } else {
+                return 'Account creation succeeded, however an error occurred during configuration - please check to confirm whether account details are correct. Error detail: '.base64_encode(var_export($response, true));
+            }
+        }
+    }
 ?>
