@@ -29,15 +29,21 @@
 
             <tr>
                 <td>Protected Items Quota</td>
+        {if $AllProtectedItemsQuota eq 0}
+                <td>Unlimited</td>
+        {else}
                 <td>{$AllProtectedItemsQuota}GB</td>
+        {/if}
             </tr>
 
-        {if $StorageVaultQuota neq false}
             <tr>
                 <td>Initial Storage Vault Quota</td>
+        {if $StorageVaultQuota eq false}
+                <td>Unlimited</td>
+        {else}
                 <td>{$StorageVaultQuota}GB</td>
-            </tr>
         {/if}
+            </tr>
 
             <tr>
                 <td>Maximum Devices</td>
