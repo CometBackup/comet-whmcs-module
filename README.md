@@ -1,4 +1,9 @@
 # Comet WHMCS Module Documentation - **2018/10/31**
+__Requirements:__ 
+* Comet Server v18.9.2+
+* WHMCS v7.6.0+
+
+Earlier versions of these products may work with some caveats, but are untested.
 ## Installation and Configuration
 1. Extract the module .zip file
 2. Upload the module folder to your WHMCS provisioning module folder, and rename it to __cometbackup__.
