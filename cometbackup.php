@@ -314,7 +314,7 @@ function cometbackup_ClientArea(array $params) {
                                     "ClauseType": "",
                                     "RuleField": "BackupJobDetail.Username",
                                     "RuleOperator": "str_eq",
-                                    "RuleValue": "'.'Michael'.'"
+                                    "RuleValue": "'.$params['username'].'"
                                 },
                                 {
                                     "ClauseType": "",
