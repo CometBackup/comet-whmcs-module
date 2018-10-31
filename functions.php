@@ -27,16 +27,16 @@
 
     /**
      * Send a request to the given API endpoint on the server.
-     * @param string $serverAddress Server URL
+     * @param array $params
      * @param array $data API parameters to supply
      * @param string $endPoint Admin API to use
      * @param bool $assoc (Optional) Return associative array instead of object
      * @return array|object|string
      */
-    function performAPIRequest($serverAddress, $data, $endPoint, $assoc=true){
+    function performAPIRequest($params, $data, $endPoint, $assoc=true){
         $query = http_build_query($data);
         $ch = getCurlHandle(
-            $serverAddress.'/api/v1/admin/'.$endPoint,
+            getHost($params).'/api/v1/admin/'.$endPoint,
             $query,
             [CURLOPT_FOLLOWLOCATION => true]
         );
@@ -55,15 +55,15 @@
 
     /**
      * Stream a client software download.
-     * @param string $url Comet server URL
+     * @param array $params
      * @param array $data Request data
      * @param string $action API endpoint
      * @return string
      */
-    function softwareDownload($url, $data, $action) {
+    function softwareDownload($params, $data, $action) {
         $query = http_build_query($data);
         $ch = getCurlHandle(
-            $url.'/api/v1/admin/'.$action,
+            getHost($params).'/api/v1/admin/'.$action,
             $query,
             [CURLOPT_FOLLOWLOCATION => true]
         );
@@ -197,7 +197,7 @@
         ];
 
         $profile = performAPIRequest(
-            $params['serverhostname'],
+            $params,
             $baseRequestData,
             'get-user-profile-and-hash',
             false
@@ -208,7 +208,7 @@
             $profileData->IsSuspended = $suspended; // Modify suspension state value
 
             $response = performAPIRequest(
-                $params['serverhostname'],
+                $params,
                 $baseRequestData + [
                     'ProfileData' => json_encode($profileData),
                     'RequireHash' => $profile->ProfileHash
@@ -236,14 +236,14 @@
         ];
 
         $policy = performAPIRequest(
-            $params['serverhostname'],
+            $params,
             $baseRequestData,
             'policies/get'
         );
 
         if (empty($policy['PolicyHash'])) {
             performAPIRequest(
-                $params['serverhostname'],
+                $params,
                 $baseRequestData + [
                     'Policy' => json_encode([
                         'Description' => $policyGroupGUID,
@@ -279,7 +279,7 @@
         ];
 
         // Retrieve profile content for modification
-        $profile = performAPIRequest($params['serverhostname'], $baseRequestData,'get-user-profile-and-hash', false);
+        $profile = performAPIRequest($params, $baseRequestData,'get-user-profile-and-hash', false);
 
         // Sanity check
         if (is_object($profile) && property_exists($profile, 'ProfileHash')) {
@@ -313,13 +313,24 @@
                 ];
 
             // Update user
-            $response = performAPIRequest($params['serverhostname'], $updateProfileRequestData,'set-user-profile-hash');
+            $response = performAPIRequest($params, $updateProfileRequestData,'set-user-profile-hash');
 
             if (isset($response['Status']) && $response['Status'] == 200) {
                 return 'success';
             } else {
                 return 'Account creation succeeded, however an error occurred during configuration - please check to confirm whether account details are correct. Error detail: '.base64_encode(var_export($response, true));
             }
+        } else {
+            return 'Couldn\'t retrieve profile';
         }
     }
-?>
+
+    /**
+     * Produce a usable server hostname
+     * @param $params
+     * @return string
+     */
+    function getHost($params) {
+        $hostname =  preg_replace(["^http://^i","^https://^i", "^/^"],"", $params['serverhostname']);
+        return $params['serverhttpprefix'].'://'.$hostname;
+    }

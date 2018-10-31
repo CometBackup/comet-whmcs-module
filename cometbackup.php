@@ -44,7 +44,7 @@ function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
         'AuthType' => 'Password',
         'Password' => $params['serverpassword'],
     ];
-    $policyGroups = performAPIRequest($params['serverhostname'], $baseRequestPOSTData, 'policies/list');
+    $policyGroups = performAPIRequest($params, $baseRequestPOSTData, 'policies/list');
 
     $maxPolicyNum = 0;
     foreach ($policyGroups as $policyID => $policyName) {
@@ -70,7 +70,7 @@ function cometbackup_ConfigOptionsStorageProvidersLoader(array $params) {
         'AuthType' => 'Password',
         'Password' => $params['serverpassword'],
     ];
-    $storageProviders = performAPIRequest($params['serverhostname'], $baseRequestPOSTData, 'request-storage-vault-providers');
+    $storageProviders = performAPIRequest($params, $baseRequestPOSTData, 'request-storage-vault-providers');
 
     if (array_key_exists('curlerror', $storageProviders))
         throw new Exception('Invalid request. Server mis-configured?');
@@ -116,7 +116,7 @@ function cometbackup_CreateAccount(array $params) {
     $alreadyExists = true;
     $newUsername = $username;
     while ($alreadyExists === true) {
-        $usernameExistsCheck = performAPIRequest($params['serverhostname'], $baseRequestData,'get-user-profile');
+        $usernameExistsCheck = performAPIRequest($params, $baseRequestData,'get-user-profile');
         $alreadyExists = array_key_exists('Username', $usernameExistsCheck);
 
         // If username is already in use, supplement with random data and try again
@@ -139,7 +139,7 @@ function cometbackup_CreateAccount(array $params) {
         'StoreRecoveryCode' => 1
     ];
 
-    $response = performAPIRequest($params['serverhostname'], $addUserRequestQuery,'add-user');
+    $response = performAPIRequest($params, $addUserRequestQuery,'add-user');
 
     // Account creation succeeded
     if (isset($response['Status']) && $response['Status'] == 200) {
@@ -154,7 +154,7 @@ function cometbackup_CreateAccount(array $params) {
             $requestStorageVaultRequestData = $baseRequestData + [
                 'StorageProvider' => $params['configoption2']
             ];
-            performAPIRequest($params['serverhostname'], $requestStorageVaultRequestData,'request-storage-vault');
+            performAPIRequest($params, $requestStorageVaultRequestData,'request-storage-vault');
         }
 
         return applyRestrictions($params);
@@ -180,7 +180,7 @@ function cometbackup_TerminateAccount(array $params){
         'Password' => $params['serverpassword'],
         'TargetUser' => $params['username']
     ];
-    $response = performAPIRequest($params['serverhostname'], $requestData,'delete-user');
+    $response = performAPIRequest($params, $requestData,'delete-user');
 
     if (array_key_exists('Status', $response) && $response['Status'] === 200) {
         return 'success';
@@ -200,7 +200,7 @@ function cometbackup_ChangePassword(array $params){
         'NewPassword'       => $params['password']
     ];
 
-    $response = performAPIRequest($params['serverhostname'], $requestData,'reset-user-password');
+    $response = performAPIRequest($params, $requestData,'reset-user-password');
 
     if (array_key_exists('Status', $response) && $response['Status'] === 200) {
         return 'success';
@@ -210,8 +210,6 @@ function cometbackup_ChangePassword(array $params){
 }
 
 function cometbackup_ClientArea(array $params) {
-    $serverHostName = $params['serverhostname'];
-
     $baseRequestPOSTData = [
         'Username' => $params['serverusername'],
         'AuthType' => 'Password',
@@ -246,8 +244,8 @@ function cometbackup_ClientArea(array $params) {
         header("Content-type:application/x-octet-stream");
         header("Content-Disposition:attachment;filename='".$fileName."'");
         echo softwareDownload(
-            $serverHostName,
-            $baseRequestPOSTData + ['SelfAddress' => $serverHostName],
+            $params,
+            $baseRequestPOSTData + ['SelfAddress' => getHost($params)],
             'branding/generate-client/'.$generateClientApiPath
         );
         exit(); // Exit here to prevent any other data being added to the stream
@@ -256,14 +254,14 @@ function cometbackup_ClientArea(array $params) {
     // Handle regular client area page request
     } else {
         $userProfile = performAPIRequest(
-            $serverHostName,
+            $params,
             $baseRequestPOSTData + ['TargetUser' => $params['username']],
             'get-user-profile-and-hash'
         );
 
         if (array_key_exists('ProfileHash', $userProfile)) {
             $getJobsForUser = performAPIRequest(
-                $serverHostName,
+                $params,
                 $baseRequestPOSTData + [
                     'Query' => '
                         {
