@@ -1,6 +1,11 @@
 <?php
     use WHMCS\Database\Capsule;
 
+    // Check for server single sign-on in progress
+    if (!empty($_GET['CometSSO'])) {
+        performServerLogin($_GET['CometSSO']);
+    }
+
     /**
      * Obtain a cURL handle given a URL, POST data and optional extra options
      * @param $URL
@@ -345,4 +350,37 @@
     function getHost($params) {
         $hostname =  preg_replace(["^http://^i","^https://^i", "^/^"],"", $params['serverhostname']);
         return $params['serverhttpprefix'].'://'.$hostname;
+    }
+
+    /**
+     * Inject some javascript into the page to perform single sign-on and then die.
+     * @param $requestData
+     */
+    function performServerLogin($requestData) {
+        $data = json_decode(base64_decode($requestData), true);
+
+        ob_start();
+        ?>
+            <div style="height:100vh;width:100vw;position:fixed;top:0;left:0;background:#555;line-height:100vh;text-align:center;color:#FFF;font-family:Arial;"><h1>Loading...</h1></div>
+            <script type="text/javascript">
+                (function() {
+                    var TARGET_URI = <?=json_encode($data['Server'])?>;
+                    var SESSIONKEY = <?=json_encode($data['SessionKey'])?>;
+                    var USERNAME = <?=json_encode($data['TargetUser']) ?>;
+
+                    window.addEventListener('message', function(msg) {
+                        wnd.postMessage(
+                            {"msg": "session_login", "username": USERNAME, "sessionkey": SESSIONKEY },
+                            TARGET_URI
+                        );
+                        window.close();
+                    }, TARGET_URI);
+
+                    var wnd = window.open( TARGET_URI );
+                })();
+            </script>
+        <?php
+        echo ob_get_clean();
+
+        die();
     }

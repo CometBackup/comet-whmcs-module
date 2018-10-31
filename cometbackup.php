@@ -373,3 +373,24 @@ function cometbackup_TestConnection(array $params){
 function cometbackup_ChangePackage($params) {
     return applyRestrictions($params);
 }
+
+function cometbackup_AdminSingleSignOn($params) {
+    $startSessionResult = performAPIRequest($params, [], 'account/session-start');
+
+    if (!empty($startSessionResult['SessionKey'])) {
+        $requiredParameters = base64_encode(json_encode([
+            'Server' => getHost($params),
+            'SessionKey' => $startSessionResult['SessionKey'],
+            'TargetUser' => $params['serverusername']
+        ]));
+        return [
+            'success' => true,
+            'redirectTo' => '/admin/configservers.php?CometSSO='.$requiredParameters
+        ];
+    } else {
+        return [
+            'success' => false,
+            'errorMsg' => (empty($startSessionResult['Message']) ? 'Login failed.' : $startSessionResult['Message'])
+        ];
+    }
+}
