@@ -1,9 +1,12 @@
-# Comet WHMCS Module Documentation - **2018/10/31**
-__Requirements:__ 
+# Comet Provisioning Module for WHMCS  
+
+## Requirements 
 * Comet Server v18.9.2+
 * WHMCS v7.6.0+
 
 Earlier versions of these products may work with some caveats, but are untested.
+<div class="page"/>
+
 ## Installation and Configuration
 1. Extract the module .zip file
 2. Upload the module folder to your WHMCS provisioning module folder, and rename it to __cometbackup__.
@@ -16,13 +19,13 @@ Earlier versions of these products may work with some caveats, but are untested.
     * You can use the __Test Connection__ button to verify your server is accessible at the provided address using the provided login details.
 6. Still in the __Servers__ area, click __Create New Group__ and assign your server to your new server group.  
     ![Create a Server Group](documentation/03-ServerGroupAdd.png)
-    * We _strongly recommend_ ensuring that your Comet server groups in WHMCS never contain more than one server. Unexpected behaviour may occur if this is not the case.
+    * We _strongly recommend_ that you only have one server per Comet server group in WHMCS - having more than one server in a group may result in unexpected behaviour.
 7. Navigate to __Setup__ > __Products/Services__ > __Products/Services__.
 8. Create a product group if none exists.  
     ![Create a Product Group](documentation/04-ProductGroupAdd.png)
 9. Create a new product, assigned to your product group.  
     ![Create a New Product](documentation/05-ProductAdd.png)
-10. In the product's __Details__ tab, we recommend disabling the __Require Domain__.  
+10. In the product's __Details__ tab, we recommend _disabling_ the __Require Domain__ option.  
     ![Create a New Product - Details Tab](documentation/06-ProductAddDetails.png) 
 11. In the product's __Module Settings__ tab, select __Comet Backup__ and choose the new server group.  
     ![Create a New Product - Module Settings Tab](documentation/07-ProductAddModuleSettings.png)
@@ -35,18 +38,20 @@ Earlier versions of these products may work with some caveats, but are untested.
         * Password changes via the client software are disallowed and admins are allowed to reset user passwords.
             * This requires users to manage their passwords via WHMCS, keeping the WHMCS password on file in sync with the actual password on the Comet server.
     * New policy groups will be created the first time the module attempts to assign them to a new account.  
+13. This product can now be used to provision and manage Comet accounts from WHMCS.
 ***
-[//]: # (End of Installation and Configuration)
-## Manual Setup for Configurable Options
-Configurable options are presented to your users during signup. The Comet provisioning module for WHMCS currently supports configurable options for maximum device limits, protected item quotas, and storage vault quotas (which are only applied to WHMCS-managed storage vaults).
+<div class="page"/>
+
+## Setting up Configurable Options
+Configurable options are presented to your users during sign-up. The Comet provisioning module for WHMCS currently supports configurable options for maximum device limits, protected item quotas, and storage vault quotas.
 1. Navigate to __Setup__ > __Products/Services__ > __Configurable Options__ and click __Create a New Group__.
 2. Pick a sensible group name, select your new product in the __Assigned Products__ list, then click __Save__.  
     ![Create a New Configurable Options Group](documentation/08-ConfigurableOptionsGroupAdd.png)
 3. Click __Add New Configurable Option__.
 4. Enter an __Option Name__. You must choose from the following list, with the left-side preceding "|" being an exact match, and the right side being the label your customers will see when ordering a product:
     * `number_of_devices|Devices`
-    * `protected_item_quota_gb|Protected Items Quota`
-    * `storage_vault_quota_gb|Initial Storage Vault Quota`
+    * `protected_item_quota_gb|Protected Items Quota (GB)`
+    * `storage_vault_quota_gb|Initial Storage Vault Quota (GB)`
 5. Set __Option Type__ to __Quantity__.
 6. In __Add Option__, enter `GB` or `Devices` depending on the option you're configuring.
 7. Click __Save Changes__.  
@@ -58,7 +63,25 @@ Configurable options are presented to your users during signup. The Comet provis
     ![Add New Configurable Option - Finalise Your Configuration](documentation/10-ConfigurableOptionsAddPost.png)
 11. Repeat steps __3__ to __10__ again for additional desired restrictions as per step __4__.
 ***
+<div class="page"/>
+
 ## Customer Usage
-1. Choose any one product from cart.php (e.g. __http://your_whmcs_url.com/cart.php__).
+![Selecting new service options for Comet](documentation/11-ClientNewService.png)  
+*Selecting new service options for Comet* 
+1. Choose your Comet product from cart.php (e.g. __http://your_whmcs_url.com/cart.php__).
+2. Options will present based on the __Configurable Options__ that you have assigned to the product.
 2. Complete order.
-3. Depending on product configuration as per step __11__ of __Installation and Configuration__, the module __create__ command may run.
+3. Depending on the product configuration as per step __11__ of __Installation and Configuration__, the module __create__ command may run.
+## Admin Area Usage
+![Viewing client service options from the admin area](documentation/12-AdminAreaClientService.png)  
+*Viewing client service options from the admin area*
+### Changing Passwords
+1. Set the new user password in the customer's __Products/Services__ tab.
+2. Save your changes.
+3. Run the __Change Password__ action from the module commands area.
+### Changing Quotas
+1. Set the new protected item / storage vault / device quota values in the customer's __Products/Services__ tab.
+2. Save your changes.
+3. Run the __Change Package__ action from the module commands area.
+### Other Actions
+All other module commands can be run directly from a customer's __Products/Services__ tab without the need to perform additional steps such as saving first.
