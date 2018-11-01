@@ -1,5 +1,8 @@
 # Comet Provisioning Module for WHMCS  
 
+[![@CometBackup on Twitter](http://img.shields.io/badge/twitter-%40CometBackup-blue.svg?style=flat)](https://twitter.com/CometBackup)
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)]()
+
 ## Requirements 
 * Comet Server v18.9.2+
 * WHMCS v7.6.0+
