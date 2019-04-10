@@ -217,7 +217,7 @@ function cometbackup_ClientArea(array $params) {
         }
 
         header("Content-type:application/x-octet-stream");
-        header("Content-Disposition:attachment;filename='".$fileName."'");
+        header("Content-Disposition:attachment;filename=\"".$fileName."\"");
         echo softwareDownload(
             $params,
              ['SelfAddress' => getHost($params)],
