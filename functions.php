@@ -130,18 +130,21 @@ function formatJobType($code)
         case 4002:
             return 'Restore';
         case 4003:
-            return 'Retention';
+            return 'Cleanup';
         case 4004:
-            return 'Vault Unlock';
+            return 'Unlock';
         case 4005:
-            return 'Snapshot Deletion';
+            return 'Delete';
         case 4006:
-            return 'Re-measure Vault Size';
+            return 'Measure';
         case 4007:
-            return 'Software Update';
+            return 'Update';
         case 4008:
             return 'Import';
-
+        case 4009:
+            return 'Reindex';
+        case 4010:
+            return 'Verify';
         default:
             return 'Unknown';
     }
