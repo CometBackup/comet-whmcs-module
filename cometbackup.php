@@ -1,21 +1,24 @@
 <?php
 
 use WHMCS\Database\Capsule;
-require_once __DIR__.'/functions.php';
+
+require_once __DIR__ . '/functions.php';
 
 if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
-function cometbackup_MetaData(){
-    return array(
+function cometbackup_MetaData()
+{
+    return [
         'DisplayName' => 'Comet Backup',
         'APIVersion' => '1.1', // Use API Version 1.1
         'RequiresServer' => true, // Set true if module requires a server to work
-    );
+    ];
 }
 
-function cometbackup_ConfigOptions($params) {
+function cometbackup_ConfigOptions($params)
+{
     return [
         'PolicyGroupGUID'       => [
             'FriendlyName'          => 'Policy Group',
@@ -39,7 +42,8 @@ function cometbackup_ConfigOptions($params) {
     ];
 }
 
-function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
+function cometbackup_ConfigOptionsPolicyGroupLoader(array $params)
+{
     $policyGroups = performAPIRequest($params, [], 'policies/list');
 
     $maxPolicyNum = 0;
@@ -51,16 +55,17 @@ function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
             }
         }
     }
-    
+
     if (array_key_exists('curlerror', $policyGroups))
         throw new Exception('Invalid request. Server mis-configured?');
 
-    $newPolicyGroupID = 'WHMCS_'.($maxPolicyNum+1);
+    $newPolicyGroupID = 'WHMCS_' . ($maxPolicyNum + 1);
 
-    return ['' => 'None'] + $policyGroups + [$newPolicyGroupID => '[Create New Policy Group] ('.$newPolicyGroupID.')'];
+    return ['' => 'None'] + $policyGroups + [$newPolicyGroupID => '[Create New Policy Group] (' . $newPolicyGroupID . ')'];
 }
 
-function cometbackup_ConfigOptionsStorageProvidersLoader(array $params) {
+function cometbackup_ConfigOptionsStorageProvidersLoader(array $params)
+{
     $storageProviders = performAPIRequest($params, [], 'request-storage-vault-providers');
 
     if (array_key_exists('curlerror', $storageProviders)) {
@@ -70,21 +75,19 @@ function cometbackup_ConfigOptionsStorageProvidersLoader(array $params) {
     return ["" => "None"] + $storageProviders;
 }
 
-function cometbackup_CreateAccount(array $params) {
+function cometbackup_CreateAccount(array $params)
+{
     // Try a few different options for automatic username selection
     if (!empty($params['username'])) {
         $username = $params['username'];
-
     } else if (
         !empty($email = $params['clientsdetails']['email']) &&
-        count($emailComponents = explode('@',$email)) &&
+        count($emailComponents = explode('@', $email)) &&
         $emailComponents[0] !== ""
     ) {
         $username = $emailComponents[0];
-
     } else if (!empty(strtolower($params['clientsdetails']['firstname']))) {
-        $username=strtolower($params['clientsdetails']['firstname'].$params['serviceid']);
-
+        $username = strtolower($params['clientsdetails']['firstname'] . $params['serviceid']);
     } else {
         $username = 'user';
     }
@@ -93,7 +96,7 @@ function cometbackup_CreateAccount(array $params) {
     $usernameLength = strlen($username);
     if ($usernameLength < 6) { // Minimum username length is 6 characters
         $randomData = strval(rand(100000, getrandmax())); // Need to supplement with up to 6 random numbers
-        $username = $username . substr($randomData,0, 6 - $usernameLength);
+        $username = $username . substr($randomData, 0, 6 - $usernameLength);
     }
 
     // Prepare base API request params
@@ -105,12 +108,12 @@ function cometbackup_CreateAccount(array $params) {
     $alreadyExists = true;
     $newUsername = $username;
     while ($alreadyExists === true) {
-        $usernameExistsCheck = performAPIRequest($params, $baseRequestData,'get-user-profile');
+        $usernameExistsCheck = performAPIRequest($params, $baseRequestData, 'get-user-profile');
         $alreadyExists = array_key_exists('Username', $usernameExistsCheck);
 
         // If username is already in use, supplement with random data and try again
         if ($alreadyExists) {
-            $newUsername = $username . '_'.strval(rand(1000, 9999)); // Supplement with 4 random numbers
+            $newUsername = $username . '_' . strval(rand(1000, 9999)); // Supplement with 4 random numbers
             $baseRequestData['TargetUser'] = $newUsername;
         }
     }
@@ -128,7 +131,7 @@ function cometbackup_CreateAccount(array $params) {
         'StoreRecoveryCode' => 1
     ];
 
-    $response = performAPIRequest($params, $addUserRequestQuery,'add-user');
+    $response = performAPIRequest($params, $addUserRequestQuery, 'add-user');
 
     // Account creation succeeded
     if (isset($response['Status']) && $response['Status'] == 200) {
@@ -143,47 +146,50 @@ function cometbackup_CreateAccount(array $params) {
             $requestStorageVaultRequestData = $baseRequestData + [
                 'StorageProvider' => $params['configoption2']
             ];
-            performAPIRequest($params, $requestStorageVaultRequestData,'request-storage-vault');
+            performAPIRequest($params, $requestStorageVaultRequestData, 'request-storage-vault');
         }
 
         return applyRestrictions($params);
-
     } else {
         // Account creation failed
         return handleErrorResponse($response);
     }
 }
 
-function cometbackup_SuspendAccount(array $params){
+function cometbackup_SuspendAccount(array $params)
+{
     return modifyAccountSuspensionState($params, true);
 }
 
-function cometbackup_UnsuspendAccount(array $params){
+function cometbackup_UnsuspendAccount(array $params)
+{
     return modifyAccountSuspensionState($params, false);
 }
 
-function cometbackup_TerminateAccount(array $params){
+function cometbackup_TerminateAccount(array $params)
+{
     $requestData = [
         'TargetUser' => $params['username']
     ];
-    $response = performAPIRequest($params, $requestData,'delete-user');
+    $response = performAPIRequest($params, $requestData, 'delete-user');
 
     if (array_key_exists('Status', $response) && $response['Status'] === 200) {
         return 'success';
     } else if (array_key_exists('Message', $response)) {
         return $response['Message'];
     } else {
-        return 'Unknown error - please contact support: '.base64_encode($response);
+        return 'Unknown error - please contact support: ' . base64_encode($response);
     }
 }
 
-function cometbackup_ChangePassword(array $params){
+function cometbackup_ChangePassword(array $params)
+{
     $requestData = [
         'TargetUser'        => $params['username'],
         'NewPassword'       => $params['password']
     ];
 
-    $response = performAPIRequest($params, $requestData,'reset-user-password');
+    $response = performAPIRequest($params, $requestData, 'reset-user-password');
 
     if (array_key_exists('Status', $response) && $response['Status'] === 200) {
         return 'success';
@@ -192,7 +198,8 @@ function cometbackup_ChangePassword(array $params){
     }
 }
 
-function cometbackup_ClientArea(array $params) {
+function cometbackup_ClientArea(array $params)
+{
     // Handle client download request
     if (!!$_REQUEST['type'] && strpos($_REQUEST['type'], 'downloadResponse') !== false) {
         switch ($_REQUEST['type']) {
@@ -219,16 +226,16 @@ function cometbackup_ClientArea(array $params) {
         }
 
         header("Content-type:application/x-octet-stream");
-        header("Content-Disposition:attachment;filename=\"".$fileName."\"");
+        header("Content-Disposition:attachment;filename=\"" . $fileName . "\"");
         echo softwareDownload(
             $params,
-             ['SelfAddress' => getHost($params)],
-            'branding/generate-client/'.$generateClientApiPath
+            ['SelfAddress' => getHost($params)],
+            'branding/generate-client/' . $generateClientApiPath
         );
         exit(); // Exit here to prevent any other data being added to the stream
 
 
-    // Handle regular client area page request
+        // Handle regular client area page request
     } else {
         $userProfile = performAPIRequest(
             $params,
@@ -248,13 +255,13 @@ function cometbackup_ClientArea(array $params) {
                                     "ClauseType": "",
                                     "RuleField": "BackupJobDetail.Username",
                                     "RuleOperator": "str_eq",
-                                    "RuleValue": "'.$params['username'].'"
+                                    "RuleValue": "' . $params['username'] . '"
                                 },
                                 {
                                     "ClauseType": "",
                                     "RuleField": "BackupJobDetail.StartTime",
                                     "RuleOperator": "int_gt",
-                                    "RuleValue": "'.strval(strtotime("-2 week")).'"
+                                    "RuleValue": "' . strval(strtotime("-2 week")) . '"
                                 }
                             ]
                         }
@@ -275,7 +282,7 @@ function cometbackup_ClientArea(array $params) {
                     !array_key_exists('Devices', $userProfile['Profile']) ||
                     !array_key_exists($job['DeviceID'], $userProfile['Profile']['Devices'])
                 ) {
-					$job['DeviceName'] = 'Unknown';
+                    $job['DeviceName'] = 'Unknown';
                 } else {
                     $job['DeviceName'] = $userProfile['Profile']['Devices'][$job['DeviceID']]['FriendlyName'];
                 }
@@ -288,8 +295,6 @@ function cometbackup_ClientArea(array $params) {
                 $job['DownloadSize'] = formatBytes($job['DownloadSize']);
                 $job['StartTime'] = date("Y-m-d h:i", $job['StartTime']);
             }
-
-
 
             // Calculate data usage across all protected items
             $totalSize = 0;
@@ -317,83 +322,74 @@ function cometbackup_ClientArea(array $params) {
             }
 
             // Return template data
-            return array(
+            return [
                 'templatefile' => 'clientarea',
                 'vars' => $templateVars
-            );
-
+            ];
         } else if (array_key_exists('Status', $userProfile) && $userProfile['Status'] === 500 && array_key_exists('Message', $userProfile)) {
-            return (
-                'Error - please contact support: <span style="color:#A22;word-break:break-word;">'.$userProfile['Message'].'</span><br>'.
-                '<span style="color:#A22;">Error data:</span> <span style="color:#CCC;word-break:break-word;">'.
-                base64_encode('TargetUser: '.var_export($params['username'],true)).
-                '</span>'
-            );
-
+            return ('Error - please contact support: <span style="color:#A22;word-break:break-word;">' . $userProfile['Message'] . '</span><br>' .
+                '<span style="color:#A22;">Error data:</span> <span style="color:#CCC;word-break:break-word;">' .
+                base64_encode('TargetUser: ' . var_export($params['username'], true)) .
+                '</span>');
         } else {
-            return (
-                'Unknown error - please contact support. <br>'.
-                '<span style="color:#A22;">Error data:</span> <span style="color:#CCC;word-break:break-word;">'.
+            return ('Unknown error - please contact support. <br>' .
+                '<span style="color:#A22;">Error data:</span> <span style="color:#CCC;word-break:break-word;">' .
                 base64_encode(
-                    var_export($userProfile,true).
-                    'TargetUser: '.var_export($params['username'],true)
-                ).
-                '</span>'
-            );
+                    var_export($userProfile, true) .
+                        'TargetUser: ' . var_export($params['username'], true)
+                ) .
+                '</span>');
         }
     }
 }
 
-function cometbackup_TestConnection(array $params){
-    $resp = performAPIRequest($params, [],'meta/version');
+function cometbackup_TestConnection(array $params)
+{
+    $resp = performAPIRequest($params, [], 'meta/version');
 
-    // Expected Success Response
-    if (array_key_exists('Version', $resp)) {
+    if (array_key_exists('Version', $resp)) { // Expected Success Response
         $success = 'Server connection test success.';
         $error = false;
-
-    // Failed Authentication Response
-    } else if (array_key_exists('Status', $resp) && array_key_exists('Message', $resp) && $resp['Status'] == 403) {
+        
+    } else if (array_key_exists('Status', $resp) && array_key_exists('Message', $resp) && $resp['Status'] == 403) { // Failed Authentication Response
         $success = false;
         $error = $resp['Message'];
-
-    // Failed Connection Response
-    } else if (array_key_exists('curlerror', $resp)) {
+        
+    } else if (array_key_exists('curlerror', $resp)) { // Failed Connection Response
         $success = false;
         $error = $resp['curlerror'];
-
-    // No Valid Listener Response
-    } else if (is_array($resp) && count($resp) === 0) {
+        
+    } else if (is_array($resp) && count($resp) === 0) { // No Valid Listener Response
         $success = false;
         $error = 'Empty response from server: No service listening on this port?';
-
-    // Invalid Response
-    } else if ($resp === NULL) {
+        
+    } else if ($resp === NULL) { // Invalid Response
         $success = false;
         $error = 'Invalid response.';
-
-    // Unknown Bad Response
-    } else {
+        
+    } else { // Unknown Bad Response
         $success = false;
         $keys = array_keys($resp);
         if (count($keys) === 1 && strlen($resp[$keys[0]]) > 0) {
             $error = $resp[$keys[0]];
         } else {
-            $error = 'Unknown error - please contact support: '.base64_encode(var_export($resp, true));
+            $error = 'Unknown error - please contact support: ' . base64_encode(var_export($resp, true));
         }
     }
 
     return [
-      'success' => $success,
-      'error' => $error
+        'success' => $success,
+        'error' => $error
     ];
 }
 
-function cometbackup_ChangePackage($params) {
+function cometbackup_ChangePackage($params)
+{
     return applyRestrictions($params);
 }
 
-function cometbackup_AdminSingleSignOn($params) {
+function cometbackup_AdminSingleSignOn($params)
+{
     $startSessionResult = performAPIRequest($params, [], 'account/session-start');
 
     if (!empty($startSessionResult['SessionKey'])) {
@@ -404,9 +400,8 @@ function cometbackup_AdminSingleSignOn($params) {
         ]));
         return [
             'success' => true,
-            'redirectTo' => '/admin/configservers.php?CometSSO='.$requiredParameters
+            'redirectTo' => '/admin/configservers.php?CometSSO=' . $requiredParameters
         ];
-
     } else {
         return [
             'success' => false,

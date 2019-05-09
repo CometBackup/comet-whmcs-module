@@ -7,19 +7,21 @@ if (!empty($_GET['CometSSO'])) {
 
 /**
  * Obtain a cURL handle given a URL, POST data and optional extra options
+ * 
  * @param $URL
  * @param $data
  * @param array $extra_opts
  * @return resource
  */
-function getCurlHandle($URL, $data, $extra_opts=[]) {
+function getCurlHandle($URL, $data, $extra_opts = [])
+{
     $ch = curl_init();
 
-    curl_setopt($ch, CURLOPT_URL,  $URL);
+    curl_setopt($ch, CURLOPT_URL, $URL);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,30);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 30);
     curl_setopt($ch, CURLOPT_TIMEOUT, 400); // Timeout in seconds
 
     foreach ($extra_opts as $opt => $value) {
@@ -31,13 +33,15 @@ function getCurlHandle($URL, $data, $extra_opts=[]) {
 
 /**
  * Send a request to the given API endpoint on the server.
+ * 
  * @param array $params
  * @param array $data API parameters to supply
  * @param string $endPoint Admin API to use
  * @param bool $assoc (Optional) Return associative array instead of object
  * @return array|object|string
  */
-function performAPIRequest($params, $data, $endPoint, $assoc=true){
+function performAPIRequest($params, $data, $endPoint, $assoc = true)
+{
     $baseParams = [
         'Username' => $params['serverusername'],
         'AuthType' => 'Password',
@@ -46,31 +50,32 @@ function performAPIRequest($params, $data, $endPoint, $assoc=true){
 
     $query = http_build_query($baseParams + $data);
     $ch = getCurlHandle(
-        getHost($params).'/api/v1/admin/'.$endPoint,
+        getHost($params) . '/api/v1/admin/' . $endPoint,
         $query,
         [CURLOPT_FOLLOWLOCATION => true]
     );
 
     $response = curl_exec($ch);
-
-    if ($error = curl_error($ch)){
-        $ret = ['curlerror' => $error];
-    } else {
-        $ret = json_decode($response, $assoc);
-    }
-
+    $error = curl_error($ch);
     curl_close($ch);
-    return $ret;
+
+    if ($error) {
+        return ['curlerror' => $error];
+    } else {
+        return json_decode($response, $assoc);
+    }
 }
 
 /**
  * Stream a client software download.
+ * 
  * @param array $params
  * @param array $data Request data
  * @param string $action API endpoint
  * @return string
  */
-function softwareDownload($params, $data, $action) {
+function softwareDownload($params, $data, $action)
+{
     $baseParams = [
         'Username' => $params['serverusername'],
         'AuthType' => 'Password',
@@ -79,7 +84,7 @@ function softwareDownload($params, $data, $action) {
 
     $query = http_build_query($baseParams + $data);
     $ch = getCurlHandle(
-        getHost($params).'/api/v1/admin/'.$action,
+        getHost($params) . '/api/v1/admin/' . $action,
         $query,
         [CURLOPT_FOLLOWLOCATION => true]
     );
@@ -90,30 +95,25 @@ function softwareDownload($params, $data, $action) {
 
 /**
  * Format bytes count into human-readable form.
+ * 
  * @param $bytes
  * @return string
  */
-function formatBytes($bytes) {
+function formatBytes($bytes)
+{
     if ($bytes >= 1073741824) {
-        $ret = number_format($bytes / 1073741824, 2) . ' GB';
-
+        return number_format($bytes / 1073741824, 2) . ' GB';
     } else if ($bytes >= 1048576) {
-        $ret = number_format($bytes / 1048576, 2) . ' MB';
-
+        return number_format($bytes / 1048576, 2) . ' MB';
     } else if ($bytes >= 1024) {
-        $ret = number_format($bytes / 1024, 2) . ' KB';
-
+        return number_format($bytes / 1024, 2) . ' KB';
     } else if ($bytes > 1) {
-        $ret = $bytes . ' bytes';
-
+        return $bytes . ' bytes';
     } else if ($bytes == 1) {
-        $ret = $bytes . ' byte';
-
+        return $bytes . ' byte';
     } else {
-        $ret = '0 bytes';
+        return '0 bytes';
     }
-
-    return $ret;
 }
 
 /**
@@ -122,55 +122,46 @@ function formatBytes($bytes) {
  * @param int $code
  * @return string
  */
-function formatJobType($code) {
+function formatJobType($code)
+{
     switch ($code) {
         case 4001:
-            $ret = 'Backup';
-            break;
+            return 'Backup';
         case 4002:
-            $ret = 'Restore';
-            break;
+            return 'Restore';
         case 4003:
-            $ret = 'Retention';
-            break;
+            return 'Retention';
         case 4004:
-            $ret = 'Vault Unlock';
-            break;
+            return 'Vault Unlock';
         case 4005:
-            $ret = 'Snapshot Deletion';
-            break;
+            return 'Snapshot Deletion';
         case 4006:
-            $ret = 'Re-measure Vault Size';
-            break;
+            return 'Re-measure Vault Size';
         case 4007:
-            $ret = 'Software Update';
-            break;
+            return 'Software Update';
         case 4008:
-            $ret = 'Import';
-            break;
-        case 4000:
-        default:
-            $ret = 'Unknown';
-    }
+            return 'Import';
 
-    return $ret;
+        default:
+            return 'Unknown';
+    }
 }
 
 /**
  * Convert Comet status code to human readable form.
+ * 
  * @param $code
  * @return string
  */
-function formatStatusType($code) {
+function formatStatusType($code)
+{
     if ($code >= 5000 && $code <= 5999) {
-        $ret = 'Running';
+        return 'Running';
     } else if ($code >= 6000 && $code <= 6999) {
-        $ret = 'Success';
+        return 'Success';
     } else {
-        $ret = 'Error';
+        return 'Error';
     }
-
-    return $ret;
 }
 
 /**
@@ -180,31 +171,36 @@ function formatStatusType($code) {
  * @param string $str Raw text
  * @return string HTML
  */
-function hesc($str) {
+function hesc($str)
+{
     return @htmlentities($str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
 /**
  * Outputs API response message or a generic error message containing encoded response details if no API response message present
+ * 
  * @param array $response
  * @param bool $noHTML
- * @return string;
+ * @return string
  */
-function handleErrorResponse($response, $noHTML=false) {
+function handleErrorResponse($response, $noHTML = false)
+{
     if (isset($response['Message'])) {
         return $response['Message'];
     } else {
-        return 'An error has occurred - please contact support. '.($noHTML ? ' Error detail: ' : '<br> <span style="color:darkred;"> Error detail:</span>').base64_encode(var_export($response, true));
+        return 'An error has occurred - please contact support. ' . ($noHTML ? ' Error detail: ' : '<br> <span style="color:darkred;"> Error detail:</span>') . base64_encode(var_export($response, true));
     }
 }
 
 /**
  * Sets the suspension state of an account to the provided value
+ * 
  * @param array $params
  * @param bool $suspended
  * @return string
  */
-function modifyAccountSuspensionState($params, $suspended) {
+function modifyAccountSuspensionState($params, $suspended)
+{
     $baseRequestData = [
         'TargetUser' => $params['username']
     ];
@@ -241,10 +237,12 @@ function modifyAccountSuspensionState($params, $suspended) {
 
 /**
  * Checks for the existence of a policy group on the Comet server and creates it if necessary.
+ * 
  * @param array $params
  * @param string $policyGroupGUID
  */
-function maybeCreatePolicyGroup($params, $policyGroupGUID) {
+function maybeCreatePolicyGroup($params, $policyGroupGUID)
+{
     $baseRequestData = [
         'PolicyID' => $policyGroupGUID
     ];
@@ -285,17 +283,19 @@ function maybeCreatePolicyGroup($params, $policyGroupGUID) {
 
 /**
  * Retrieves a user profile and updates it to reflect the currently configured account restrictions in WHMCS.
+ * 
  * @param array $params
  * @return string
  */
-function applyRestrictions($params) {
+function applyRestrictions($params)
+{
     // Prepare base API request params
     $baseRequestData = [
         'TargetUser' => $params['username'],
     ];
 
     // Retrieve profile content for modification
-    $profile = performAPIRequest($params, $baseRequestData,'get-user-profile-and-hash', false);
+    $profile = performAPIRequest($params, $baseRequestData, 'get-user-profile-and-hash', false);
 
     // Sanity check
     if (is_object($profile) && property_exists($profile, 'ProfileHash')) {
@@ -314,7 +314,7 @@ function applyRestrictions($params) {
 
         // Apply protected items quota if set
         $profileData->AllProtectedItemsQuotaEnabled     = !empty($params['configoptions']['protected_item_quota_gb']);
-        $profileData->AllProtectedItemsQuotaBytes       = (empty($params['configoptions']['protected_item_quota_gb']) ? 0 : intval($params['configoptions']['protected_item_quota_gb']) * pow(1024,3));
+        $profileData->AllProtectedItemsQuotaBytes       = (empty($params['configoptions']['protected_item_quota_gb']) ? 0 : intval($params['configoptions']['protected_item_quota_gb']) * pow(1024, 3));
 
         // Apply device quota if set
         $profileData->MaximumDevices                    = intval((empty($params['configoptions']['number_of_devices']) ? 0 : intval($params['configoptions']['number_of_devices'])));
@@ -329,12 +329,12 @@ function applyRestrictions($params) {
         ];
 
         // Update user
-        $response = performAPIRequest($params, $updateProfileRequestData,'set-user-profile-hash');
+        $response = performAPIRequest($params, $updateProfileRequestData, 'set-user-profile-hash');
 
         if (isset($response['Status']) && $response['Status'] == 200) {
             return 'success';
         } else {
-            return 'Account creation succeeded, however an error occurred during configuration - please check to confirm whether account details are correct. Error detail: '.base64_encode(var_export($response, true));
+            return 'Account creation succeeded, however an error occurred during configuration - please check to confirm whether account details are correct. Error detail: ' . base64_encode(var_export($response, true));
         }
     } else {
         return 'Couldn\'t retrieve profile';
@@ -343,42 +343,51 @@ function applyRestrictions($params) {
 
 /**
  * Produce a usable server hostname
- * @param $params
+ * 
+ * @param array $params
  * @return string
  */
-function getHost($params) {
-    $hostname =  preg_replace(["^http://^i","^https://^i", "^/^"],"", $params['serverhostname']);
-    return $params['serverhttpprefix'].'://'.$hostname;
+function getHost($params)
+{
+    $hostname =  preg_replace(["^http://^i", "^https://^i", "^/^"], "", $params['serverhostname']);
+    return $params['serverhttpprefix'] . '://' . $hostname;
 }
 
 /**
  * Inject some javascript into the page to perform single sign-on and then die.
- * @param $requestData
+ * 
+ * @param string $requestData Base64-encoded JSON object
  */
-function performServerLogin($requestData) {
+function performServerLogin($requestData)
+{
     $data = json_decode(base64_decode($requestData), true);
 
     ob_start();
-    ?>
-        <div style="height:100vh;width:100vw;position:fixed;top:0;left:0;background:#555;line-height:100vh;text-align:center;color:#FFF;font-family:Arial;"><h1>Loading...</h1></div>
-        <script type="text/javascript">
-            (function() {
-                var TARGET_URI = <?=json_encode($data['Server'])?>;
-                var SESSIONKEY = <?=json_encode($data['SessionKey'])?>;
-                var USERNAME = <?=json_encode($data['TargetUser']) ?>;
+?> 
+    <div style="height:100vh;width:100vw;position:fixed;top:0;left:0;background:#555;line-height:100vh;text-align:center;color:#FFF;font-family:Arial;">
+        <h1>Loading...</h1>
+    </div>
+    <script type="text/javascript">
+        (function() {
+            var TARGET_URI = <?= json_encode($data['Server']) ?>;
+            var SESSIONKEY = <?= json_encode($data['SessionKey']) ?>;
+            var USERNAME = <?= json_encode($data['TargetUser']) ?>;
 
-                window.addEventListener('message', function(msg) {
-                    wnd.postMessage(
-                        {"msg": "session_login", "username": USERNAME, "sessionkey": SESSIONKEY },
-                        TARGET_URI
-                    );
-                    window.close();
-                }, TARGET_URI);
+            window.addEventListener('message', function(msg) {
+                wnd.postMessage({
+                        "msg": "session_login",
+                        "username": USERNAME,
+                        "sessionkey": SESSIONKEY
+                    },
+                    TARGET_URI
+                );
+                window.close();
+            }, TARGET_URI);
 
-                var wnd = window.open( TARGET_URI );
-            })();
-        </script>
-    <?php
+            var wnd = window.open(TARGET_URI);
+        })();
+    </script>
+<?php
     echo ob_get_clean();
 
     die();
