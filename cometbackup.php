@@ -1,4 +1,5 @@
 <?php
+
 use WHMCS\Database\Capsule;
 require_once __DIR__.'/functions.php';
 
@@ -62,8 +63,9 @@ function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
 function cometbackup_ConfigOptionsStorageProvidersLoader(array $params) {
     $storageProviders = performAPIRequest($params, [], 'request-storage-vault-providers');
 
-    if (array_key_exists('curlerror', $storageProviders))
+    if (array_key_exists('curlerror', $storageProviders)) {
         throw new Exception('Invalid request. Server mis-configured?');
+    }
 
     return ["" => "None"] + $storageProviders;
 }
@@ -404,6 +406,7 @@ function cometbackup_AdminSingleSignOn($params) {
             'success' => true,
             'redirectTo' => '/admin/configservers.php?CometSSO='.$requiredParameters
         ];
+
     } else {
         return [
             'success' => false,
