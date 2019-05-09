@@ -186,8 +186,8 @@ function cometbackup_TerminateAccount(array $params)
 function cometbackup_ChangePassword(array $params)
 {
     $requestData = [
-        'TargetUser'        => $params['username'],
-        'NewPassword'       => $params['password']
+        'TargetUser'  => $params['username'],
+        'NewPassword' => $params['password']
     ];
 
     $response = performAPIRequest($params, $requestData, 'reset-user-password');
@@ -202,8 +202,8 @@ function cometbackup_ChangePassword(array $params)
 function cometbackup_ClientArea(array $params)
 {
     // Handle client download request
-    if (!!$_REQUEST['type'] && strpos($_REQUEST['type'], 'downloadResponse') !== false) {
-        switch ($_REQUEST['type']) {
+    if (!!$_GET['type'] && strpos($_GET['type'], 'downloadResponse') !== false) {
+        switch ($_GET['type']) {
             case 'downloadResponseLinux':
                 $fileName = 'ClientInstaller.run';
                 $generateClientApiPath = 'linuxgeneric';
@@ -344,7 +344,7 @@ function cometbackup_ClientArea(array $params)
                 '<span style="color:#A22;">Error data:</span> <span style="color:#CCC;word-break:break-word;">' .
                 base64_encode(
                     var_export($userProfile, true) .
-                        'TargetUser: ' . var_export($params['username'], true)
+                    'TargetUser: ' . var_export($params['username'], true)
                 ) .
                 '</span>'
             );
