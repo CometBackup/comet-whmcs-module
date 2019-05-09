@@ -247,25 +247,25 @@ function cometbackup_ClientArea(array $params)
             $getJobsForUser = performAPIRequest(
                 $params,
                 [
-                    'Query' => '
-                        {
-                            "ClauseType": "and",
-                            "ClauseChildren": [
-                                {
-                                    "ClauseType": "",
-                                    "RuleField": "BackupJobDetail.Username",
-                                    "RuleOperator": "str_eq",
-                                    "RuleValue": "' . $params['username'] . '"
-                                },
-                                {
-                                    "ClauseType": "",
-                                    "RuleField": "BackupJobDetail.StartTime",
-                                    "RuleOperator": "int_gt",
-                                    "RuleValue": "' . strval(strtotime("-2 week")) . '"
-                                }
+                    'Query' => json_encode([
+                    
+                        "ClauseType" => "and",
+                        "ClauseChildren" => [
+                            [
+                                "ClauseType" => "",
+                                "RuleField" => "BackupJobDetail.Username",
+                                "RuleOperator" => "str_eq",
+                                "RuleValue" => $params['username'],
+                            ],
+                            [
+                                "ClauseType" => "",
+                                "RuleField" => "BackupJobDetail.StartTime",
+                                "RuleOperator" => "int_gt",
+                                "RuleValue" => strval(strtotime("-2 week")),
                             ]
-                        }
-                    '
+                        ]
+                        
+                    ])
                 ],
                 'get-jobs-for-custom-search'
             );
