@@ -56,8 +56,9 @@ function cometbackup_ConfigOptionsPolicyGroupLoader(array $params)
         }
     }
 
-    if (array_key_exists('curlerror', $policyGroups))
+    if (array_key_exists('curlerror', $policyGroups)) {
         throw new Exception('Invalid request. Server mis-configured?');
+    }
 
     $newPolicyGroupID = 'WHMCS_' . ($maxPolicyNum + 1);
 
@@ -234,7 +235,6 @@ function cometbackup_ClientArea(array $params)
         );
         exit(); // Exit here to prevent any other data being added to the stream
 
-
         // Handle regular client area page request
     } else {
         $userProfile = performAPIRequest(
@@ -326,19 +326,29 @@ function cometbackup_ClientArea(array $params)
                 'templatefile' => 'clientarea',
                 'vars' => $templateVars
             ];
+
         } else if (array_key_exists('Status', $userProfile) && $userProfile['Status'] === 500 && array_key_exists('Message', $userProfile)) {
-            return ('Error - please contact support: <span style="color:#A22;word-break:break-word;">' . $userProfile['Message'] . '</span><br>' .
+            return (
+                'Error - please contact support: <span style="color:#A22;word-break:break-word;">' . $userProfile['Message'] . '</span><br>' .
                 '<span style="color:#A22;">Error data:</span> <span style="color:#CCC;word-break:break-word;">' .
-                base64_encode('TargetUser: ' . var_export($params['username'], true)) .
-                '</span>');
+                base64_encode(
+                    'TargetUser: ' .
+                    var_export($params['username'], true)
+                ) .
+                '</span>'
+            );
+
         } else {
-            return ('Unknown error - please contact support. <br>' .
+            return (
+                'Unknown error - please contact support. <br>' .
                 '<span style="color:#A22;">Error data:</span> <span style="color:#CCC;word-break:break-word;">' .
                 base64_encode(
                     var_export($userProfile, true) .
                         'TargetUser: ' . var_export($params['username'], true)
                 ) .
-                '</span>');
+                '</span>'
+            );
+
         }
     }
 }
