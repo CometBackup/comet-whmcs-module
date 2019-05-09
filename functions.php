@@ -362,7 +362,6 @@ function performServerLogin($requestData)
 {
     $data = json_decode(base64_decode($requestData), true);
 
-    ob_start();
 ?> 
     <div style="height:100vh;width:100vw;position:fixed;top:0;left:0;background:#555;line-height:100vh;text-align:center;color:#FFF;font-family:Arial;">
         <h1>Loading...</h1>
@@ -388,7 +387,6 @@ function performServerLogin($requestData)
         })();
     </script>
 <?php
-    echo ob_get_clean();
 
     die();
 }
