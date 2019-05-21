@@ -34,7 +34,7 @@ function cometbackup_ConfigOptions($params) {
         ],
         'Message'               => [
             'FriendlyName'          => 'Note',
-            'Description'           => 'The [Create New Policy Group] option will cause a new policy group to be created - for technical reasons, this one-time action is postponed to the first time a new account is created using this product.',
+            'Description'           => 'The [Create New Policy Group] option will cause a new policy group to be created - for technical reasons, this one-time action is postponed to the first time a new account is created using this product. <style>div.module-settings-mode > a.btn > span.text-advanced{display:none;}</style>',
             'SimpleMode'            => true
         ],
     ];
