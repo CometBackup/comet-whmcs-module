@@ -73,18 +73,25 @@ function cometbackup_ConfigOptionsStorageProvidersLoader(array $params) {
 }
 
 function cometbackup_CreateAccount(array $params) {
+    $isUsingCustomUsername = false;
+    $isUsingCustomPassword = false;
+
     // Try a few different options for automatic username selection
-    if (!empty($params['username'])) {
-        $username = $params['username'];
-    } else if (
-        !empty($email = $params['clientsdetails']['email']) &&
-        count($emailComponents = explode('@', $email)) &&
-        $emailComponents[0] !== ""
-    ) {
-        $username = $emailComponents[0];
+    if (!empty($params['customfields']['Username'])) {
+        // Use a manually specified username, if this has been configured
+        $username = $params['customfields']['Username'];
+        $isUsingCustomUsername = true;
+
+    } else if (!empty($params['clientsdetails']['email'])) {
+        // Use the client's email address, if present
+        $username = $params['clientsdetails']['email'];
+
     } else if (!empty(strtolower($params['clientsdetails']['firstname']))) {
+        // If we somehow ended up here, use the client's first name and service ID as a base
         $username = strtolower($params['clientsdetails']['firstname'] . $params['serviceid']);
+
     } else {
+        // Everything else has failed, so we'll start with the word 'user' and append some random characters in the next step
         $username = 'user';
     }
 
@@ -107,7 +114,7 @@ function cometbackup_CreateAccount(array $params) {
         $usernameExistsCheck = performAPIRequest($params, $baseRequestData, 'get-user-profile');
         $alreadyExists = array_key_exists('Username', $usernameExistsCheck);
 
-        // If username is already in use, supplement with random data and try again
+        // If the username is taken, supplement with random characters and try again
         if ($alreadyExists) {
             $newUsername = $username . '_' . strval(rand(1000, 9999)); // Supplement with 4 random numbers
             $baseRequestData['TargetUser'] = $newUsername;
@@ -121,21 +128,33 @@ function cometbackup_CreateAccount(array $params) {
         maybeCreatePolicyGroup($params, $params['configoption1']);
     }
 
+    // Get account password
+    $password = getPasswordFromParams($params);
+    $isUsingCustomPassword = getIsUsingCustomPasswordFromParams($params);
+    
     // Prepare add-user API request params
     $addUserRequestQuery = $baseRequestData + [
-        'TargetPassword' => $params['password'],
+        'TargetPassword' => $password,
         'StoreRecoveryCode' => 1
     ];
+    
+    // Update username on record in case this changed
+    $dbQueryParams = [
+        'username' => ($isUsingCustomUsername ? '[Using custom field]' : $username)
+    ];
+
+    // Clear auto-generated service password if a custom password field is in use
+    if ($isUsingCustomPassword) {
+        $dbQueryParams['password'] = '';
+    }
+
+    // Apply DB updates
+    $result = Capsule::table('tblhosting')->where('id', $params['serviceid'])->update($dbQueryParams);
 
     $response = performAPIRequest($params, $addUserRequestQuery, 'add-user');
 
     // Account creation succeeded
     if (isset($response['Status']) && $response['Status'] == 200) {
-
-        // Update username on record in case this changed
-        Capsule::table('tblhosting')->where('id', $params['serviceid'])->update([
-            'username' => $username
-        ]);
 
         // Request storage vault
         if (!empty($params['configoption2'])) {
@@ -147,8 +166,9 @@ function cometbackup_CreateAccount(array $params) {
         }
 
         return applyRestrictions($params);
+
+    // Account creation failed
     } else {
-        // Account creation failed
         return handleErrorResponse($response);
     }
 }
@@ -163,7 +183,7 @@ function cometbackup_UnsuspendAccount(array $params) {
 
 function cometbackup_TerminateAccount(array $params) {
     $requestData = [
-        'TargetUser' => $params['username']
+        'TargetUser' => getUsernameFromParams($params)
     ];
     $response = performAPIRequest($params, $requestData, 'delete-user');
 
@@ -177,9 +197,14 @@ function cometbackup_TerminateAccount(array $params) {
 }
 
 function cometbackup_ChangePassword(array $params) {
+    $password = getPasswordFromParams($params);
+    if (strlen($password) < 8) {
+        return '<span style="color:darkred;">ERROR: Password must contain at least 8 characters.</span>';
+    }
+
     $requestData = [
-        'TargetUser'  => $params['username'],
-        'NewPassword' => $params['password']
+        'TargetUser'  => getUsernameFromParams($params),
+        'NewPassword' => $password
     ];
 
     $response = performAPIRequest($params, $requestData, 'reset-user-password');
@@ -230,7 +255,7 @@ function cometbackup_ClientArea(array $params) {
     } else {
         $userProfile = performAPIRequest(
             $params,
-            ['TargetUser' => $params['username']],
+            ['TargetUser' => getUsernameFromParams($params)],
             'get-user-profile-and-hash'
         );
 
@@ -246,7 +271,7 @@ function cometbackup_ClientArea(array $params) {
                                 "ClauseType" => "",
                                 "RuleField" => "BackupJobDetail.Username",
                                 "RuleOperator" => "str_eq",
-                                "RuleValue" => $params['username'],
+                                "RuleValue" => getUsernameFromParams($params),
                             ],
                             [
                                 "ClauseType" => "",
@@ -295,6 +320,7 @@ function cometbackup_ClientArea(array $params) {
 
             $templateVars = [
                 'Username' => $userProfile['Profile']['Username'],
+                'UsingCustomUsername' => getIsUsingCustomUsernameFromParams($params),
                 'AllProtectedItemsQuota' => ($userProfile['Profile']['AllProtectedItemsQuotaBytes'] / pow(1024, 3)), // Bytes / GiB
                 'MaximumDevices' => $userProfile['Profile']['MaximumDevices'],
                 'CreateTime' => date("Y-m-d h:i:sa", $userProfile['Profile']['CreateTime']),
@@ -324,7 +350,7 @@ function cometbackup_ClientArea(array $params) {
                 '<span style="color:#A22;">Error data:</span> <span style="color:#CCC;word-break:break-word;">' .
                 base64_encode(
                     'TargetUser: ' .
-                    var_export($params['username'], true)
+                    var_export(getUsernameFromParams($params), true)
                 ) .
                 '</span>'
             );
@@ -335,7 +361,7 @@ function cometbackup_ClientArea(array $params) {
                 '<span style="color:#A22;">Error data:</span> <span style="color:#CCC;word-break:break-word;">' .
                 base64_encode(
                     var_export($userProfile, true) .
-                    'TargetUser: ' . var_export($params['username'], true)
+                    'TargetUser: ' . var_export(getUsernameFromParams($params), true)
                 ) .
                 '</span>'
             );

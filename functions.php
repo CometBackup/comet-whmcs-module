@@ -196,7 +196,7 @@ function handleErrorResponse($response, $noHTML = false) {
  */
 function modifyAccountSuspensionState($params, $suspended) {
     $baseRequestData = [
-        'TargetUser' => $params['username']
+        'TargetUser' => getUsernameFromParams($params)
     ];
 
     $profile = performAPIRequest(
@@ -283,7 +283,7 @@ function maybeCreatePolicyGroup($params, $policyGroupGUID) {
 function applyRestrictions($params) {
     // Prepare base API request params
     $baseRequestData = [
-        'TargetUser' => $params['username'],
+        'TargetUser' => getUsernameFromParams($params),
     ];
 
     // Retrieve profile content for modification
@@ -379,4 +379,68 @@ function performServerLogin($requestData) {
 <?php
 
     die();
+}
+
+/**
+ * Retrieve the client's username, selecting from service params or product custom fields 
+ * depending on whether a custom field is present.
+ * 
+ * @param array $params
+ * @return string
+ */
+function getUsernameFromParams($params) {
+    $username = false;
+
+    // Check for a product custom field
+    if (getIsUsingCustomUsernameFromParams($params)) {
+        $username = $params['customfields']['Username'];
+
+    // If no custom field, use the service value
+    } else {
+        $username = $params['username'];
+    }
+
+    return $username;
+}
+
+/**
+ * Check whether a custom username is present.
+ * 
+ * @param array $params
+ * @return bool
+ */
+function getIsUsingCustomUsernameFromParams($params) {
+    return !empty($params['customfields']['Username']);
+}
+
+/**
+ * Retrieve the client's password, selecting from service params or product custom fields 
+ * depending on whether a custom field is present.
+ * 
+ * @param array $params
+ * @return string
+ */
+function getPasswordFromParams($params) {
+    $password = false;
+
+    // Check for a product custom field
+    if (getIsUsingCustomPasswordFromParams($params)) {
+        $password = $params['customfields']['Password'];
+
+    // If no custom field, use the service value
+    } else {
+        $password = $params['password'];
+    }
+
+    return $password;
+}
+
+/**
+ * Check whether a custom password is present.
+ * 
+ * @param array $params
+ * @return bool
+ */
+function getIsUsingCustomPasswordFromParams($params) {
+    return !empty($params['customfields']['Password']);
 }

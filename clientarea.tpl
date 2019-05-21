@@ -22,10 +22,12 @@
 	</style>
     <div id="home" class="tab-pane fade in active">
         <table class="table table-striped table-bordered bg-success table-hover">
+        {if $UsingCustomUsername eq false}
             <tr>
                 <td>Username</td>
                 <td>{$Username}</td>
             </tr>
+        {/if}
 
             <tr>
                 <td>Protected Items Quota</td>
