@@ -13,8 +13,7 @@ if (!empty($_GET['CometSSO'])) {
  * @param array $extra_opts
  * @return resource
  */
-function getCurlHandle($URL, $data, $extra_opts = [])
-{
+function getCurlHandle($URL, $data, $extra_opts = []) {
     $ch = curl_init();
 
     curl_setopt($ch, CURLOPT_URL, $URL);
@@ -40,8 +39,7 @@ function getCurlHandle($URL, $data, $extra_opts = [])
  * @param bool $assoc (Optional) Return associative array instead of object
  * @return array|object|string
  */
-function performAPIRequest($params, $data, $endPoint, $assoc = true)
-{
+function performAPIRequest($params, $data, $endPoint, $assoc = true) {
     $baseParams = [
         'Username' => $params['serverusername'],
         'AuthType' => 'Password',
@@ -74,8 +72,7 @@ function performAPIRequest($params, $data, $endPoint, $assoc = true)
  * @param string $action API endpoint
  * @return string
  */
-function softwareDownload($params, $data, $action)
-{
+function softwareDownload($params, $data, $action) {
     $baseParams = [
         'Username' => $params['serverusername'],
         'AuthType' => 'Password',
@@ -99,8 +96,7 @@ function softwareDownload($params, $data, $action)
  * @param $bytes
  * @return string
  */
-function formatBytes($bytes)
-{
+function formatBytes($bytes) {
     if ($bytes >= 1073741824) {
         return number_format($bytes / 1073741824, 2) . ' GB';
     } else if ($bytes >= 1048576) {
@@ -122,8 +118,7 @@ function formatBytes($bytes)
  * @param int $code
  * @return string
  */
-function formatJobType($code)
-{
+function formatJobType($code) {
     switch ($code) {
         case 4001:
             return 'Backup';
@@ -156,8 +151,7 @@ function formatJobType($code)
  * @param $code
  * @return string
  */
-function formatStatusType($code)
-{
+function formatStatusType($code) {
     if ($code >= 5000 && $code <= 5999) {
         return 'Running';
     } else if ($code >= 6000 && $code <= 6999) {
@@ -174,8 +168,7 @@ function formatStatusType($code)
  * @param string $str Raw text
  * @return string HTML
  */
-function hesc($str)
-{
+function hesc($str) {
     return @htmlentities($str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
@@ -186,8 +179,7 @@ function hesc($str)
  * @param bool $noHTML
  * @return string
  */
-function handleErrorResponse($response, $noHTML = false)
-{
+function handleErrorResponse($response, $noHTML = false) {
     if (isset($response['Message'])) {
         return $response['Message'];
     } else {
@@ -202,8 +194,7 @@ function handleErrorResponse($response, $noHTML = false)
  * @param bool $suspended
  * @return string
  */
-function modifyAccountSuspensionState($params, $suspended)
-{
+function modifyAccountSuspensionState($params, $suspended) {
     $baseRequestData = [
         'TargetUser' => $params['username']
     ];
@@ -244,8 +235,7 @@ function modifyAccountSuspensionState($params, $suspended)
  * @param array $params
  * @param string $policyGroupGUID
  */
-function maybeCreatePolicyGroup($params, $policyGroupGUID)
-{
+function maybeCreatePolicyGroup($params, $policyGroupGUID) {
     $baseRequestData = [
         'PolicyID' => $policyGroupGUID
     ];
@@ -290,8 +280,7 @@ function maybeCreatePolicyGroup($params, $policyGroupGUID)
  * @param array $params
  * @return string
  */
-function applyRestrictions($params)
-{
+function applyRestrictions($params) {
     // Prepare base API request params
     $baseRequestData = [
         'TargetUser' => $params['username'],
@@ -350,8 +339,7 @@ function applyRestrictions($params)
  * @param array $params
  * @return string
  */
-function getHost($params)
-{
+function getHost($params) {
     $hostname =  preg_replace(["^http://^i", "^https://^i", "^/^"], "", $params['serverhostname']);
     return $params['serverhttpprefix'] . '://' . $hostname;
 }
@@ -361,8 +349,7 @@ function getHost($params)
  * 
  * @param string $requestData Base64-encoded JSON object
  */
-function performServerLogin($requestData)
-{
+function performServerLogin($requestData) {
     $data = json_decode(base64_decode($requestData), true);
 
 ?> 

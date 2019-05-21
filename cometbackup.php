@@ -8,17 +8,15 @@ if (!defined("WHMCS")) {
     die("This file cannot be accessed directly");
 }
 
-function cometbackup_MetaData()
-{
+function cometbackup_MetaData() {
     return [
         'DisplayName' => 'Comet Backup',
-        'APIVersion' => '1.1', // Use API Version 1.1
-        'RequiresServer' => true, // Set true if module requires a server to work
+        'APIVersion' => '1.1',
+        'RequiresServer' => true,
     ];
 }
 
-function cometbackup_ConfigOptions($params)
-{
+function cometbackup_ConfigOptions($params) {
     return [
         'PolicyGroupGUID'       => [
             'FriendlyName'          => 'Policy Group',
@@ -42,8 +40,7 @@ function cometbackup_ConfigOptions($params)
     ];
 }
 
-function cometbackup_ConfigOptionsPolicyGroupLoader(array $params)
-{
+function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
     $policyGroups = performAPIRequest($params, [], 'policies/list');
 
     $maxPolicyNum = 0;
@@ -65,8 +62,7 @@ function cometbackup_ConfigOptionsPolicyGroupLoader(array $params)
     return ['' => 'None'] + $policyGroups + [$newPolicyGroupID => '[Create New Policy Group] (' . $newPolicyGroupID . ')'];
 }
 
-function cometbackup_ConfigOptionsStorageProvidersLoader(array $params)
-{
+function cometbackup_ConfigOptionsStorageProvidersLoader(array $params) {
     $storageProviders = performAPIRequest($params, [], 'request-storage-vault-providers');
 
     if (array_key_exists('curlerror', $storageProviders)) {
@@ -76,8 +72,7 @@ function cometbackup_ConfigOptionsStorageProvidersLoader(array $params)
     return ["" => "None"] + $storageProviders;
 }
 
-function cometbackup_CreateAccount(array $params)
-{
+function cometbackup_CreateAccount(array $params) {
     // Try a few different options for automatic username selection
     if (!empty($params['username'])) {
         $username = $params['username'];
@@ -157,18 +152,15 @@ function cometbackup_CreateAccount(array $params)
     }
 }
 
-function cometbackup_SuspendAccount(array $params)
-{
+function cometbackup_SuspendAccount(array $params) {
     return modifyAccountSuspensionState($params, true);
 }
 
-function cometbackup_UnsuspendAccount(array $params)
-{
+function cometbackup_UnsuspendAccount(array $params) {
     return modifyAccountSuspensionState($params, false);
 }
 
-function cometbackup_TerminateAccount(array $params)
-{
+function cometbackup_TerminateAccount(array $params) {
     $requestData = [
         'TargetUser' => $params['username']
     ];
@@ -183,8 +175,7 @@ function cometbackup_TerminateAccount(array $params)
     }
 }
 
-function cometbackup_ChangePassword(array $params)
-{
+function cometbackup_ChangePassword(array $params) {
     $requestData = [
         'TargetUser'  => $params['username'],
         'NewPassword' => $params['password']
@@ -199,8 +190,7 @@ function cometbackup_ChangePassword(array $params)
     }
 }
 
-function cometbackup_ClientArea(array $params)
-{
+function cometbackup_ClientArea(array $params) {
     // Handle client download request
     if (!!$_GET['type'] && strpos($_GET['type'], 'downloadResponse') !== false) {
         switch ($_GET['type']) {
@@ -353,8 +343,7 @@ function cometbackup_ClientArea(array $params)
     }
 }
 
-function cometbackup_TestConnection(array $params)
-{
+function cometbackup_TestConnection(array $params) {
     $resp = performAPIRequest($params, [], 'meta/version');
 
     if (array_key_exists('Version', $resp)) { // Expected Success Response
@@ -393,13 +382,11 @@ function cometbackup_TestConnection(array $params)
     ];
 }
 
-function cometbackup_ChangePackage($params)
-{
+function cometbackup_ChangePackage($params) {
     return applyRestrictions($params);
 }
 
-function cometbackup_AdminSingleSignOn($params)
-{
+function cometbackup_AdminSingleSignOn($params) {
     $startSessionResult = performAPIRequest($params, [], 'account/session-start');
 
     if (!empty($startSessionResult['SessionKey'])) {
