@@ -140,7 +140,8 @@ function cometbackup_CreateAccount(array $params) {
         // Request storage vault
         if (!empty($params['configoption2'])) {
             $requestStorageVaultRequestData = $baseRequestData + [
-                'StorageProvider' => $params['configoption2']
+                'StorageProvider' => $params['configoption2'],
+                'SelfAddress' => getHost($params).'/'
             ];
             performAPIRequest($params, $requestStorageVaultRequestData, 'request-storage-vault');
         }
