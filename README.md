@@ -143,7 +143,7 @@ There are some WHMCS settings that we recommend customising in order to achieve 
 *Viewing client service options from the admin area*
 ### Changing Passwords
 1. Set the new user password in the customer's __Products/Services__ tab.
-    * If you're allowing users to specify their own passwords (see step __12__ of the __Installation and Configuration__ section of this documentation), you should set the __Password__ field displayed _below_ the __Addons__ configuration options.
+    * If you're allowing users to specify their own passwords (see step __12__ of the __Installation and Configuration__ section of this documentation), you should set the __Password__ field displayed _below_ the __Addons__ configuration options to avoid unexpected results (if set, the service password value will overwrite the custom value when the __Change Password__ action is performed).
         * ![Changing custom passwords](documentation/16-AdminAreaClientServicePasswordCustom.png)
     * If you're using automatically generated WHMCS service passwords, you should set the __Password__ field displayed above the __Status__ setting.
         * ![Changing non-custom passwords](documentation/17-AdminAreaClientServicePasswordIntegrated.png)
