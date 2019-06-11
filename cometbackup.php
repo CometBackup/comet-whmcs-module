@@ -198,6 +198,25 @@ function cometbackup_TerminateAccount(array $params) {
 
 function cometbackup_ChangePassword(array $params) {
     $password = getPasswordFromParams($params);
+    $isUsingCustomPassword = getIsUsingCustomPasswordFromParams($params);
+    
+    // Clear auto-generated service password if a custom password field is in use
+    if ($isUsingCustomPassword && !empty($params['password'])) {
+        // If not empty the WHMCS service password likely reflects a change
+        $password = $params['password'];
+
+        // Re-clear service password
+        Capsule::table('tblhosting')->where('id', $params['serviceid'])->update(['password' => '']);
+
+        // Apply the new password to the custom password field
+        foreach (Capsule::table('tblcustomfields')->where([['relid', $params['pid']],['fieldname', 'Password']])->get() as $customField) {
+            Capsule::table('tblcustomfieldsvalues')
+                ->where([['relid', $params['serviceid']],['fieldid', $customField->id]])
+                ->update(['value' => $password]);
+            break;
+        }
+    }
+
     if (strlen($password) < 8) {
         return '<span style="color:darkred;">ERROR: Password must contain at least 8 characters.</span>';
     }
