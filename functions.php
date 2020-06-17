@@ -153,11 +153,13 @@ function formatJobType($code) {
  */
 function formatStatusType($code) {
     if ($code >= 5000 && $code <= 5999) {
-        return 'Running';
-    } else if ($code >= 6000 && $code <= 6999) {
         return 'Success';
-    } else {
+    } else if ($code >= 6000 && $code <= 6999) {
+        return 'Running';
+    } else if ($code >= 7000 && $code <= 7999) {
         return 'Error';
+    } else {
+        return 'Unknown';
     }
 }
 
