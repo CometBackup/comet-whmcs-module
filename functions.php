@@ -304,11 +304,30 @@ function applyRestrictions($params) {
                 $profileData->Destinations->$destinationGUID->StorageLimitEnabled = true;
                 $profileData->Destinations->$destinationGUID->StorageLimitBytes = intval($params['configoptions']['storage_vault_quota_gb']) * pow(1024, 3);
             }
+
+        } else if (
+            !empty($params['configoptions']['storage_vault_quota_tb']) &&
+            !empty($profileData->Destinations)
+        ) {
+            foreach (array_keys((array)$profileData->Destinations) as $destinationGUID) {
+                $profileData->Destinations->$destinationGUID->StorageLimitEnabled = true;
+                $profileData->Destinations->$destinationGUID->StorageLimitBytes = intval($params['configoptions']['storage_vault_quota_tb']) * pow(1024, 4);
+            }
         }
 
         // Apply protected items quota if set
-        $profileData->AllProtectedItemsQuotaEnabled     = !empty($params['configoptions']['protected_item_quota_gb']);
-        $profileData->AllProtectedItemsQuotaBytes       = (empty($params['configoptions']['protected_item_quota_gb']) ? 0 : intval($params['configoptions']['protected_item_quota_gb']) * pow(1024, 3));
+        if (!empty($params['configoptions']['protected_item_quota_gb'])) {
+            $profileData->AllProtectedItemsQuotaEnabled     = true;
+            $profileData->AllProtectedItemsQuotaBytes       = intval($params['configoptions']['protected_item_quota_gb']) * pow(1024, 3);
+        
+        } else if (!empty($params['configoptions']['protected_item_quota_tb'])) {
+            $profileData->AllProtectedItemsQuotaEnabled     = true;
+            $profileData->AllProtectedItemsQuotaBytes       = intval($params['configoptions']['protected_item_quota_tb']) * pow(1024, 4);
+        
+        } else {
+            $profileData->AllProtectedItemsQuotaEnabled     = false;
+            $profileData->AllProtectedItemsQuotaBytes       = 0;
+        }
 
         // Apply device quota if set
         $profileData->MaximumDevices                    = intval((empty($params['configoptions']['number_of_devices']) ? 0 : intval($params['configoptions']['number_of_devices'])));

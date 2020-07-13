@@ -86,11 +86,16 @@ Configurable options are presented to your users during sign-up. The Comet provi
     ![Create a New Configurable Options Group](documentation/08-ConfigurableOptionsGroupAdd.png)
 3. Click __Add New Configurable Option__.
 4. Enter an __Option Name__. You must choose from the following list, with the left-side preceding "`|`" being an exact match, and the right side being the label your customers will see when ordering a product:
-    * `number_of_devices|Devices`
-    * `protected_item_quota_gb|Protected Items Quota (GB)`
-    * `storage_vault_quota_gb|Initial Storage Vault Quota (GB)`
+    * Device limit:
+        * `number_of_devices|Devices`
+    * Protected item quota (use only one):
+        * `protected_item_quota_gb|Protected Items Quota (GB)`
+        * `protected_item_quota_tb|Protected Items Quota (TB)`
+    * Storage vault quota (use only one):
+        * `storage_vault_quota_gb|Initial Storage Vault Quota (GB)`
+        * `storage_vault_quota_tb|Initial Storage Vault Quota (TB)`
 5. Set __Option Type__ to __Quantity__.
-6. In __Add Option__, enter `GB` or `Devices` depending on the option you're configuring.
+6. In __Add Option__, enter `Devices`, `GB` or `TB`, depending on the option you're configuring.
 7. Click __Save Changes__.  
     ![Add New Configurable Option - Save Your Changes](documentation/09-ConfigurableOptionsAddInitial.png)
 8. Enter desired values for minimum and maximum quantities in __Minimum Quantity Required__ and __Maximum Allowed__ respectively.
