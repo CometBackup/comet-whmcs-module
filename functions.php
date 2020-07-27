@@ -362,7 +362,23 @@ function applyRestrictions($params) {
  */
 function getHost($params) {
     $hostname =  preg_replace(["^http://^i", "^https://^i", "^/^"], "", $params['serverhostname']);
-    return $params['serverhttpprefix'] . '://' . $hostname;
+
+    // Compatibility with servers configured under older versions of the module / WHMCS
+    $port = '';
+    $extractPort = [];
+    preg_match('/:([0-9]+)$/', $hostname, $extractPort);
+
+    // Use port from hostname if set (compatibility)
+    if (!empty($extractPort[1]) && is_numeric($extractPort[1])) {
+        $port = $extractPort[1];
+        $hostname =  preg_replace(["/:[0-9]+/"], "", $hostname);
+
+    // Use port from serverport if set (standard)
+    } else if (!empty($params['serverport'])) {
+        $port = $params['serverport'];
+    }
+
+    return $params['serverhttpprefix'] . '://' . $hostname . (!empty($port) ? ':' . intval($port) : '');
 }
 
 /**

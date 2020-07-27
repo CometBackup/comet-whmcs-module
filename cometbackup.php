@@ -13,6 +13,8 @@ function cometbackup_MetaData() {
         'DisplayName' => 'Comet Backup',
         'APIVersion' => '1.1',
         'RequiresServer' => true,
+        'DefaultNonSSLPort' => 8060,
+        'DefaultSSLPort' => 443,
     ];
 }
 
