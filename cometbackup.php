@@ -23,15 +23,22 @@ function cometbackup_ConfigOptions($params) {
         'PolicyGroupGUID'       => [
             'FriendlyName'          => 'Policy Group',
             'Type'                  => 'dropdown',
-            'Description'           => '<br>Select a policy group to apply to users of this product',
+            'Description'           => '<br>Select a policy group to apply to users of this product.',
             'Loader'                => 'cometbackup_ConfigOptionsPolicyGroupLoader',
             'SimpleMode'            => true
         ],
         'StorageProviderID'     => [
             'FriendlyName'          => 'Storage Vault',
             'Type'                  => 'dropdown',
-            'Description'           => '<br>Request an initial storage vault for new users',
+            'Description'           => '<br>Request an initial storage vault for new users.',
             'Loader'                => 'cometbackup_ConfigOptionsStorageProvidersLoader',
+            'SimpleMode'            => true
+        ],
+        'RequirePasswordChange'     => [
+            'FriendlyName'          => 'Require password change at initial login',
+            'Type'                  => 'dropdown',
+            'Description'           => '<br>Require the user to change their password after logging in (i.e. initial password becomes temporary). Best combined with the non-custom password approach.',
+            'Loader'                => 'cometbackup_ConfigOptionsRequirePasswordChange',
             'SimpleMode'            => true
         ],
         'Message'               => [
@@ -72,6 +79,10 @@ function cometbackup_ConfigOptionsStorageProvidersLoader(array $params) {
     }
 
     return ["" => "None"] + $storageProviders;
+}
+
+function cometbackup_ConfigOptionsRequirePasswordChange(array $params) {
+    return ["no" => "No", "yes" => "Yes"];
 }
 
 function cometbackup_CreateAccount(array $params) {
@@ -139,6 +150,11 @@ function cometbackup_CreateAccount(array $params) {
         'TargetPassword' => $password,
         'StoreRecoveryCode' => 1
     ];
+    
+    // Apply the 'Require password change at initial login' setting
+    if (!empty($params['configoption3'])) {
+        $addUserRequestQuery['RequirePasswordChange'] = 1;
+    }
     
     // Update username on record in case this changed
     $dbQueryParams = [
