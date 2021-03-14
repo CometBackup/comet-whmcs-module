@@ -152,7 +152,7 @@ function cometbackup_CreateAccount(array $params) {
     ];
     
     // Apply the 'Require password change at initial login' setting
-    if (!empty($params['configoption3'])) {
+    if (!empty($params['configoption3']) && $params['configoption3'] === 'yes') {
         $addUserRequestQuery['RequirePasswordChange'] = 1;
     }
     
