@@ -133,8 +133,23 @@ function cometbackup_CreateAccount(array $params) {
             $baseRequestData['TargetUser'] = $newUsername;
         }
     }
-    $username = $newUsername;
-    $params['username'] = $username;
+    // update the custom parameter username to be set to the new username that has been created for the service
+    if ($username != $newUsername) {
+        $username = $newUsername;
+        $params['username'] = $username;
+
+        $command = 'UpdateClientProduct';
+        $postData = array(
+            'serviceid' => $params['serviceid'],
+            'customfields' => base64_encode(serialize(array("username" => $newUsername))),
+        );
+        $results = localAPI($command, $postData);
+        if (isset($results['result']) && $results['result'] !== 'success') {
+            throw new Exception("Provisioning Comet Backup Account $newUsername: WHMCS Update custom fields error:" . $results['message']);
+        }
+        error_log("Updated local field:\n" . json_encode($results));
+    }
+
 
     // Create policy if it doesn't yet exist
     if (!empty($params['configoption1'])) {
