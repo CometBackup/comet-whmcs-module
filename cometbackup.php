@@ -476,7 +476,7 @@ function cometbackup_AdminSingleSignOn($params) {
         ]));
         return [
             'success' => true,
-            'redirectTo' => '/admin/configservers.php?CometSSO=' . $requiredParameters
+            'redirectTo' => '?CometSSO=' . $requiredParameters
         ];
     } else {
         return [
