@@ -371,7 +371,6 @@ function cometbackup_ClientArea(array $params) {
 
             $templateVars = [
                 'Username' => $userProfile['Profile']['Username'],
-                'UsingCustomUsername' => getIsUsingCustomUsernameFromParams($params),
                 'AllProtectedItemsQuota' => ($userProfile['Profile']['AllProtectedItemsQuotaBytes'] / pow(1024, 3)), // Bytes / GiB
                 'MaximumDevices' => $userProfile['Profile']['MaximumDevices'],
                 'CreateTime' => date("Y-m-d h:i:sa", $userProfile['Profile']['CreateTime']),

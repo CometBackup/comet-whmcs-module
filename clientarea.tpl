@@ -1,33 +1,47 @@
+<style>
+    fieldset.downloadsPlatform, fieldset.downloadsPlatform > a {
+        margin: 10px 0;
+    }
+    fieldset.downloadsPlatform > legend {
+        margin-bottom: 0;
+    }
+    fieldset.downloadsPlatform > legend > i {
+        margin-right: 5px;
+        padding-right: 12px;
+        border-right: 1px solid #CCC;
+    }
+    fieldset.downloadsPlatform > a {
+        display: block;
+    }
+    div.comet-tab-content {
+        border: solid #dee2e6;
+        border-width: 0 1px 1px 1px;
+        border-radius: 0 0 .25rem .25rem;
+        padding: 10px 10px 0 10px;
+    }
+    table.account-table td:first-of-type {
+        text-align: right;
+        width: auto;
+        white-space: nowrap;
+        font-weight: 600;
+    }
+    table.account-table td:last-of-type {
+        text-align: left;
+        width: 100%;
+    }
+</style>
 <ul class="nav nav-tabs">
-  <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
-  <li><a data-toggle="tab" href="#jobs">Jobs List</a></li>
-  <li><a data-toggle="tab" href="#downloads">Downloads</a></li>
+  <li class="active nav-item"><a data-toggle="tab" href="#home" class="nav-link active">Home</a></li>&nbsp;
+  <li class="nav-item"><a data-toggle="tab" href="#jobs" class="nav-link">Jobs List</a></li>&nbsp;
+  <li class="nav-item"><a data-toggle="tab" href="#downloads" class="nav-link">Downloads</a></li>&nbsp;
 </ul>
-<div class="tab-content">
-	<style>
-		fieldset.downloadsPlatform, fieldset.downloadsPlatform > a {
-			margin: 10px 0;
-		}
-		fieldset.downloadsPlatform > legend {
-			margin-bottom: 0;
-		}
-		fieldset.downloadsPlatform > legend > i {
-			margin-right: 5px;
-			padding-right: 12px;
-			border-right: 1px solid #CCC;
-		}
-		fieldset.downloadsPlatform > a {
-			display: block;
-		}
-	</style>
-    <div id="home" class="tab-pane fade in active">
-        <table class="table table-striped table-bordered bg-success table-hover">
-        {if $UsingCustomUsername eq false}
+<div class="tab-content comet-tab-content">
+    <div id="home" class="tab-pane fade-in active show">
+        <table class="table account-table table-striped table-bordered table-hover">
             <tr>
                 <td>Username</td>
                 <td>{$Username}</td>
             </tr>
-        {/if}
 
             <tr>
                 <td>Protected Items Quota</td>
@@ -64,7 +78,7 @@
         </table>
     </div>
     <div id="jobs" class="tab-pane fade">
-        <table class="table table-striped table-bordered bg-success table-hover text-left">
+        <table class="table table-striped table-bordered table-hover text-left">
             <tr>
                 <th>Device</th>
                 <th>Protected Item</th>
