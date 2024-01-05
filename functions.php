@@ -350,7 +350,7 @@ function applyRestrictions($params) {
             return 'Account creation succeeded, however an error occurred during configuration - please check to confirm whether account details are correct. Error detail: ' . base64_encode(var_export($response, true));
         }
     } else {
-        return 'Couldn\'t retrieve profile';
+        return 'Couldn\'t retrieve profile.';
     }
 }
 
@@ -447,7 +447,7 @@ function getUsernameFromParams($params) {
  * @return bool
  */
 function getIsUsingCustomUsernameFromParams($params) {
-    return !empty($params['customfields']['Username']);
+    return !empty(trim($params['customfields']['Username']));
 }
 
 /**

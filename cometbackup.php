@@ -90,9 +90,9 @@ function cometbackup_CreateAccount(array $params) {
     $isUsingCustomPassword = false;
 
     // Try a few different options for automatic username selection
-    if (!empty($params['customfields']['Username'])) {
+    if (!empty(trim($params['customfields']['Username']))) {
         // Use a manually specified username, if this has been configured
-        $username = $params['customfields']['Username'];
+        $username = trim($params['customfields']['Username']);
         $isUsingCustomUsername = true;
 
     } else if (!empty($params['clientsdetails']['email'])) {
@@ -133,23 +133,22 @@ function cometbackup_CreateAccount(array $params) {
             $baseRequestData['TargetUser'] = $newUsername;
         }
     }
-    // update the custom parameter username to be set to the new username that has been created for the service
-    if ($username != $newUsername) {
-        $username = $newUsername;
-        $params['username'] = $username;
 
-        $command = 'UpdateClientProduct';
-        $postData = array(
+    // Update the custom parameter username to be set to the new username that has been created for the service
+    $username = $newUsername;
+    $params['username'] = $username;
+
+    $results = localAPI(
+        'UpdateClientProduct',
+        [
             'serviceid' => $params['serviceid'],
             'customfields' => base64_encode(serialize(array("username" => $newUsername))),
-        );
-        $results = localAPI($command, $postData);
-        if (isset($results['result']) && $results['result'] !== 'success') {
-            throw new Exception("Provisioning Comet Backup Account $newUsername: WHMCS Update custom fields error:" . $results['message']);
-        }
-        error_log("Updated local field:\n" . json_encode($results));
-    }
+        ]
+    );
 
+    if (isset($results['result']) && $results['result'] !== 'success') {
+        throw new Exception("Provisioning Comet Backup Account $newUsername: WHMCS Update custom fields error:" . $results['message']);
+    }
 
     // Create policy if it doesn't yet exist
     if (!empty($params['configoption1'])) {
