@@ -52,21 +52,11 @@ function cometbackup_ConfigOptions($params) {
 function cometbackup_ConfigOptionsPolicyGroupLoader(array $params) {
     $policyGroups = performAPIRequest($params, [], 'policies/list');
 
-    $maxPolicyNum = 0;
-    foreach ($policyGroups as $policyID => $policyName) {
-        if (strpos($policyID, 'WHMCS_') === 0) {
-            $policyNum = intval(substr($policyID, 6));
-            if ($policyNum > $maxPolicyNum) {
-                $maxPolicyNum = $policyNum;
-            }
-        }
-    }
-
     if (array_key_exists('curlerror', $policyGroups)) {
         throw new Exception('Invalid request. Server mis-configured?');
     }
 
-    $newPolicyGroupID = 'WHMCS_' . ($maxPolicyNum + 1);
+    $newPolicyGroupID = uniqid("WHMCS_", true);
 
     return ['' => 'None'] + $policyGroups + [$newPolicyGroupID => '[Create New Policy Group] (' . $newPolicyGroupID . ')'];
 }
